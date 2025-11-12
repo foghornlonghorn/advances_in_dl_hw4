@@ -165,8 +165,9 @@ def extract_track_info(info_path: str) -> str:
     Returns:
         Track name as a string
     """
-
-    raise NotImplementedError("Not implemented")
+    with open(info_path) ipf:
+        print(info_path)
+    #raise NotImplementedError("Not implemented")
 
 
 def generate_qa_pairs(info_path: str, view_index: int, img_width: int = 150, img_height: int = 100) -> list:
