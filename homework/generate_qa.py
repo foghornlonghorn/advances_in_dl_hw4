@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import torch
 
 import fire
 import matplotlib.pyplot as plt
@@ -131,6 +132,67 @@ def draw_detections(
     return np.array(pil_image)
 
 
+def _get_relative_cart_data(data: dict = None, img_width: int = 150, img_height: int = 100, view_index = None) -> list:
+    """
+
+    """
+    with open(info_path) as ipf:
+        data = json.load(ipf)
+        width_factor = img_width / ORIGINAL_WIDTH
+        height_factor = img_height / ORIGINAL_HEIGHT
+        ctr = [img_width / 2, img_height / 2]
+        karts = data['karts']
+
+        #     class_id, track_id, x1, y1, x2, y2 = detection
+        # class_id: object type
+        # track_id: object in seq of detected objects
+        for i, detections in enumerate(data['detections'][view_index]):
+            kart_ctrs = {}
+            for detection in detections:
+                # assign instance_id -> detection[1]
+                if detection[0] != OBJECT_TYPES[1]:
+                    continue
+
+                instance_id = detection[1]
+                kart_name = data['karts'][instance_id],
+                kart = {
+                    'kart_name': kart_name,
+                    'is_center_kart': False,
+                    'instance_id': instance_id,
+                    'center': [inf, inf],
+                }
+
+                if instance_id not in kart_ctrs:
+                    kart_ctrs[instance_id] = []
+
+                detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
+                                  (abs(detection[3] - detection[5]) / 2) * height_factor]
+                kart_ctrs[instance_id].append(detection_ctr)
+
+
+                karts.append(kart)
+
+        # find cart centers and ego cart
+        delta_min = inf
+        best_ctr = [inf, inf]
+        kart_idx = -1
+
+        for k in karts.keys():
+            kart_ctrs_ = kart_ctrs[k]
+
+            for ctr_ in kart_ctrs_:
+
+                detection_delta_avg = (abs(sum(ctr) / 2) - (sum(ctr_)) / 2)
+
+                if detection_delta_avg <= delta_min:
+                    best_ctr = ctr_
+                    delta_min = detection_delta_avg
+                    ctr_kart = k
+
+            karts[k]['ctr'] = torch.tensor(kart_ctrs_, dtype=float).mean(dim=1)
+
+        return karts[k]['is_center_kart'] = True
+
 def extract_kart_objects(
     info_path: str, view_index: int, img_width: int = 150, img_height: int = 100, min_box_size: int = 5
 ) -> list:
@@ -151,9 +213,48 @@ def extract_kart_objects(
         - center: (x, y) coordinates of the kart's center
         - is_center_kart: Boolean indicating if this is the kart closest to image center
     """
+    with open(info_path) as ipf:
+        data = json.load(ipf)
+        objs = []
+        width_factor = img_width / ORIGINAL_WIDTH
+        height_factor = img_height / ORIGINAL_HEIGHT
+        ctr = [img_width / 2, img_height / 2]
+        karts = data['karts']
 
-    raise NotImplementedError("Not implemented")
+        #     class_id, track_id, x1, y1, x2, y2 = detection
+        # class_id: object type
+        # track_id: object in seq of detected objects
+        # for i, detections in enumerate(data['detections'][view_index]):
+        #     kart = {
+        #         'kart_name': karts[i],
+        #         'is_center_kart': False,
+        #         'instance_id': None,
+        #         'center': [inf, inf],
+        #     }
+        #     delta_min = inf
+        #     ctr = [inf, inf]
+        #     kart_idx = -1
+        #     # focus on detection[view_index]
+        #     for detection in detections:
+        #         # assign instance_id -> detection[1]
+        #         if detection[0] != OBJECT_TYPES[1]:
+        #             continue
+        #         detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
+        #                           (abs(detection[3] - detection[5]) / 2) * height_factor]
 
+        #         detection_delta_avg = (sum(ctr) / 2) - (sum(detection_ctr) / 2)
+        #         if detection_delta_avg <= delta_min:
+        #             ctr = detection_ctr
+        #             delta_min = detection_delta_avg
+        #             kart_idx = data['karts'][detection[1]]
+
+        #     kart['center'] = ctr
+        #     kart['is_center_kart'] = kart['kart_name'] == karts[kart_idx]
+        #     objs.append(kart)
+
+        #return objs
+
+        return _get_relative_cart_data(info_path, img_width, img_height, view_index)
 
 def extract_track_info(info_path: str) -> str:
     """
@@ -165,8 +266,9 @@ def extract_track_info(info_path: str) -> str:
     Returns:
         Track name as a string
     """
-    with open(info_path) ipf:
-        print(info_path)
+    with open(info_path) as ipf:
+        return json.load(ipf)['track']
+
     #raise NotImplementedError("Not implemented")
 
 
@@ -183,28 +285,87 @@ def generate_qa_pairs(info_path: str, view_index: int, img_width: int = 150, img
     Returns:
         List of dictionaries, each containing a question and answer
     """
-    # 1. Ego car question
-    # What kart is the ego car?
+    qa_pairs = []
+    with open(info_path) as ipf:
+        data = json.load(ipf)
 
+    karts = data['karts']
+    distances_down_track = {karts[i]: v, for i, v in enumerate(data['distance_down_track'])]
+    kart_objects = extract_kart_objects(info_path, view_index, img_width, img_height)
+
+    # 1. Ego car question
+    q = 'What kart is the ego car?'
+
+    ego_kart = None
+    for kart in kart_objects:
+        if kart['is_center_kart']:
+            ego_kart = kart['kart_name']
+
+    qa_pairs.append({'question': q,
+                     'answer': ego_kart})
+
+    q = 'How many karts are there in the scenario?'
     # 2. Total karts question
-    # How many karts are there in the scenario?
+    qa_paris.append({'question': q,
+                     'answer': len(kart_objects)})
 
     # 3. Track information questions
-    # What track is this?
+    qa_pairs.append({'question': 'What track is this?',
+                    'answer': extract_track_info(info_path)})
 
     # 4. Relative position questions for each kart
-    # Is {kart_name} to the left or right of the ego car?
-    # Is {kart_name} in front of or behind the ego car?
-    # Where is {kart_name} relative to the ego car?
+    q1 = 'Is {kart_name} to the left or right of the ego car?'
+    q2 = 'Is {kart_name} in front of or behind the ego car?'
+    q3 = 'Where is {kart_name} relative to the ego car?'
+
+    ctr = kart_objects[ego_kart]['center']
+    for kart in karts:
+        if kart == ego_kart:
+            continue
+        if kart not in kart_objects:
+            # TODO should we include karts not in kart_objects, i.e. out of view carts
+            continue
+        x, y = kart_objects['center']
+        relative_pos = ''
+        left_cars = 0
+        right_cars = 0
+        front_cars = 0
+        behind_cars = 0
+        if x < ctr:
+            questions.append({q1.format(kart_name=kart),
+                              'answer': 'left'})
+            relative_pos += 'left, '
+            left_cars += 1
+        else:
+            questions.append({q1.format(kart_name=kart),
+                              'answer': 'right'})
+            relative_pos += 'right, '
+            right_cars += 1
+        if y < ctr:
+            questions.append({q2.format(kart_name=kart),
+                              'answer': 'behind'})
+            relative_pos += 'behind'
+            behind_cars += 1
+        else:
+            questions.append({q2.format(kart_name=kart),
+                              'answer': 'front'})
+            relative_pos += 'front'
+            front_cars += 1
+
+        questions.append({q3.format(kart_name=kart),
+                          'answer': relative_pos})
 
     # 5. Counting questions
-    # How many karts are to the left of the ego car?
-    # How many karts are to the right of the ego car?
-    # How many karts are in front of the ego car?
-    # How many karts are behind the ego car?
+    questions.append({'question': 'How many karts are to the left of the ego car?',
+                     'answer': left_cars})
+    questions.append({'How many karts are to the right of the ego car?',
+                      'answer': right_cars})
+    questions.append({'How many karts are in front of the ego car?',
+                      'answer': front_cars})
+    questions.append({'How many karts are behind the ego car?',
+                      'answer': behind_cars})
 
-    raise NotImplementedError("Not implemented")
-
+    return questions
 
 def check_qa_pairs(info_file: str, view_index: int):
     """
