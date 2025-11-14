@@ -410,7 +410,6 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
 
             with open(qa_file, 'w') as qaf:
                 json.dump(qa_pairs, qaf)
-                break
 
         # # Print QA pairs
         # print("\nQuestion-Answer Pairs:")
