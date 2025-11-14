@@ -342,38 +342,38 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         front_cars = 0
         behind_cars = 0
         if x > ego_kart_ctr[0]:
-            qa_pairs.append(**{'question': q1.format(kart_name=kart_name),
-                              'answer': 'left'})
+            qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
+                              'answer': 'left'}))
             relative_pos += 'left, '
             left_cars += 1
         else:
-            qa_pairs.append(**{'question': q1.format(kart_name=kart_name),
-                              'answer': 'right'})
+            qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
+                              'answer': 'right'}))
             relative_pos += 'right, '
             right_cars += 1
         if y > ego_kart_ctr[1]:
-            qa_pairs.append(**{'question': q2.format(kart_name=kart_name),
-                              'answer': 'behind'})
+            qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
+                              'answer': 'behind'}))
             relative_pos += 'behind'
             behind_cars += 1
         else:
-            qa_pairs.append(**{'question': q2.format(kart_name=kart_name),
-                              'answer': 'front'})
+            qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
+                              'answer': 'front'}))
             relative_pos += 'front'
             front_cars += 1
 
-        qa_pairs.append(**{'question': q3.format(kart_name=kart_name),
-                              'answer': relative_pos})
+        qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
+                              'answer': relative_pos}))
 
         # 5. Counting questions
-        qa_pairs.append(**{'question': 'How many karts are to the left of the ego car?',
-                         'answer': left_cars})
-        qa_pairs.append(**{'question': 'How many karts are to the right of the ego car?',
-                          'answer': right_cars})
-        qa_pairs.append(**{'question': 'How many karts are in front of the ego car?',
-                          'answer': front_cars})
-        qa_pairs.append(**{'question': 'How many karts are behind the ego car?',
-                          'answer': behind_cars})
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego car?',
+                         'answer': left_cars}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the right of the ego car?',
+                          'answer': right_cars}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are in front of the ego car?',
+                          'answer': front_cars}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are behind the ego car?',
+                          'answer': behind_cars}))
 
     return qa_pairs
 
