@@ -394,8 +394,8 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             # Generate QA pairs
             qa_pairs = generate_qa_pairs(info_file, int(view_index))
 
-            print(qa_pairs)
-            print(qa_file)
+            # print(qa_pairs)
+            # print(qa_file)
 
             # Display the image
             if display_images:
