@@ -150,7 +150,10 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
         # track_id: object in seq of detected objects
         kart_ctrs = {}
         for i, detection in enumerate(data['detections'][view_index]):
-            if OBJECT_TYPES[detection[0]] != OBJECT_TYPES[1]:
+            try:
+                if OBJECT_TYPES[detection[0]] != OBJECT_TYPES[1]:
+                    continue
+            except KeyError as e:
                 continue
 
             instance_id = detection[1]
@@ -268,8 +271,6 @@ def extract_track_info(info_path: str) -> str:
     with open(info_path) as ipf:
         return json.load(ipf)['track']
 
-    #raise NotImplementedError("Not implemented")
-
 
 def generate_qa_pairs(info_path: str, view_index: int, img_width: int = 150, img_height: int = 100) -> list:
     """
@@ -369,6 +370,57 @@ def generate_qa_pairs(info_path: str, view_index: int, img_width: int = 150, img
 
     return qa_pairs
 
+def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False):
+    """
+    Check QA pairs for a specific info file and view index.
+
+    Args:
+        info_file: Path to the info.json file
+        view_index: Index of the view to analyze
+    """
+    # Find corresponding image file
+    source_dir = Path(source_dir)
+    dest_dir = Path(dest_dir)
+    info_files = source_dir.glob("*_info.json")
+
+    for info_file in info_files:
+        base_name = info_file.stem.replace("_info", "")
+        image_files = list(info_file.parent.glob(f"{base_name}_*_im.jpg"))
+
+        for image_file in image_files:
+            frame_id, view_index = extract_frame_info(image_file)
+            qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pair.json"))
+
+            # Generate QA pairs
+            qa_pairs = generate_qa_pairs(info_file, int(view_index))
+
+            print(qa_pairs)
+            print(qa_file)
+
+            # Display the image
+            if display_images:
+                # Visualize detections
+                annotated_image = draw_detections(str(image_file), info_file)
+
+                plt.figure(figsize=(12, 8))
+                plt.imshow(annotated_image)
+                plt.axis("off")
+                plt.title(f"Frame {extract_frame_info(str(image_file))[0]}, View {view_index}")
+                plt.show()
+
+            with open(qa_file, 'w') as qaf:
+                json.dump(qa_pairs, qaf)
+                break
+
+        # # Print QA pairs
+        # print("\nQuestion-Answer Pairs:")
+        # print("-" * 50)
+        # for qa in qa_pairs:
+        #     print(f"Q: {qa['question']}")
+        #     print(f"A: {qa['answer']}")
+        #     print("-" * 50)
+
+
 def check_qa_pairs(info_file: str, view_index: int):
     """
     Check QA pairs for a specific info file and view index.
@@ -413,7 +465,7 @@ You probably need to add additional commands to Fire below.
 
 
 def main():
-    fire.Fire({"check": check_qa_pairs})
+    fire.Fire({"check": check_qa_pairs, "bulk": generate_bulk})
 
 
 if __name__ == "__main__":
