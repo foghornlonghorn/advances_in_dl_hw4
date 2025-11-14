@@ -389,7 +389,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
 
         for image_file in image_files:
             frame_id, view_index = extract_frame_info(image_file)
-            qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pair.json"))
+            qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pairs.json"))
 
             # Generate QA pairs
             qa_pairs = generate_qa_pairs(info_file, int(view_index))
