@@ -310,7 +310,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
             ego_kart = kart['kart_name']
             ego_kart_ctr = kart['center']
 
-    qa_pair_factory = partial(_qa_pair_factory, image_path=image_file)
+    qa_pair_factory = partial(_qa_pair_factory, image_path=str(image_file))
 
     qa_pairs.append(qa_pair_factory(**{'question': q,
                      'answer': ego_kart}))
