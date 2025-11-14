@@ -346,12 +346,12 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         if x > ego_kart_ctr[0]:
             qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
                               'answer': 'left'}))
-            relative_pos += 'left, '
+            relative_pos += 'left and '
             left_cars += 1
         else:
             qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
                               'answer': 'right'}))
-            relative_pos += 'right, '
+            relative_pos += 'right and '
             right_cars += 1
         if y > ego_kart_ctr[1]:
             qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
@@ -403,11 +403,11 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             # Generate QA pairs
             qa_pairs = generate_qa_pairs(info_file, image_file, int(view_index))
 
-            # print(qa_pairs)
-            # print(qa_file)
+            print(qa_file)
 
             # Display the image
             if display_images:
+                print(qa_pairs)
                 # Visualize detections
                 annotated_image = draw_detections(str(image_file), info_file)
 
