@@ -23,7 +23,8 @@ class VQADataset:
 
         # Find all QA pair files for the split
         qa_files = list(self.data_dir.glob(f"{split}/*_qa_pairs.json"))
-
+        print(list(self.data_dir.glob(f"{split}/*")))
+        print(os.cwd())
         print(self.data_dir)
         print(qa_files)
 
