@@ -312,7 +312,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
 
     qa_pair_factory = partial(_qa_pair_factory, image_path=image_file)
 
-    qa_pairs.append(qa_pair_factory(*{'question': q,
+    qa_pairs.append(qa_pair_factory(**{'question': q,
                      'answer': ego_kart}))
 
     q = 'How many karts are there in the scenario?'
