@@ -23,10 +23,6 @@ class VQADataset:
 
         # Find all QA pair files for the split
         qa_files = list(self.data_dir.glob(f"{split}/*_qa_pairs.json"))
-        print(list(self.data_dir.glob(f"{split}/*")))
-        print(os.getcwd())
-        print(self.data_dir)
-        print(qa_files)
 
         for qa_file in qa_files:
             with open(qa_file) as f:
@@ -68,7 +64,7 @@ class CaptionDataset:
         self.data_dir = data_dir or DATA_DIR
 
         self.captions = []
-
+        self.data_dir = Path(self.data_dir)
         caption_files = list(self.data_dir.glob(f"{split}/*_captions.json"))
 
         for caption_file in caption_files:
