@@ -273,7 +273,7 @@ def extract_track_info(info_path: str) -> str:
 
 def _qa_pair_factory(image_path: str = None, question: str = None, answer: str = None) -> dict:
     return {
-        'image_path': image_path,
+        'image_file': image_path,
         'question': question,
         'answer': answer
     }
