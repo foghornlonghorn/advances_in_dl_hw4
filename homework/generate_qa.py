@@ -320,7 +320,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     q = 'How many karts are there in the scenario?'
     # 2. Total karts question
     qa_pairs.append(qa_pair_factory(**{'question': q,
-                     'answer': len(kart_objects)}))
+                                       'answer': str(len(kart_objects))}))
     # 3. Track information questions
     qa_pairs.append(qa_pair_factory(**{'question': 'What track is this?',
                         'answer': extract_track_info(info_path)}))
@@ -369,13 +369,13 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
 
         # 5. Counting questions
         qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego car?',
-                         'answer': left_cars}))
+                                           'answer': str(left_cars)}))
         qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the right of the ego car?',
-                          'answer': right_cars}))
+                                           'answer': str(right_cars)}))
         qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are in front of the ego car?',
-                          'answer': front_cars}))
+                                           'answer': str(front_cars)}))
         qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are behind the ego car?',
-                          'answer': behind_cars}))
+                                           'answer': str(behind_cars)}))
 
     return qa_pairs
 
