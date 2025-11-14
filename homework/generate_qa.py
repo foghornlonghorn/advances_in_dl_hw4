@@ -320,8 +320,8 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     qa_pairs.append(qa_pair_factory(**{'question': q,
                      'answer': len(kart_objects)}))
     # 3. Track information questions
-    qa_pairs.append(**{'question': 'What track is this?',
-                        'answer': extract_track_info(info_path)})
+    qa_pairs.append(qa_pair_factory(**{'question': 'What track is this?',
+                        'answer': extract_track_info(info_path)}))
 
     for kart in kart_objects:
 
