@@ -101,6 +101,8 @@ class CLIP(nn.Module):
         super().__init__()
         self.vision_encoder = vision_encoder
         self.text_encoder = text_encoder
+        self.proj_dim = proj_dim
+        self.temperature = temperature
         # TODO: implement the rest components
         # raise NotImplementedError("Not implemented")
 
@@ -180,7 +182,15 @@ class CLIP(nn.Module):
         Returns:
             TODO: think about the what values should be returned
         """
-        raise NotImplementedError("Not implemented")
+        #text_encoded = self.encode_text()
+        print(pixel_values)
+        print(type(pixel_values))
+        print(input_ids)
+        print(type(input_ids))
+        print(attention_mask)
+        print(type(attention_mask))
+        print(labels)
+        print(type(labels))
 
 
 def compute_clip_loss(
