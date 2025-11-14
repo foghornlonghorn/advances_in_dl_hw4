@@ -278,7 +278,7 @@ def _qa_pair_factory(image_path: str = None, question: str = None, answer: str =
         'answer': answer
     }
 
-def generate_qa_pairs(info_path: str, view_index: int, image_file: str, img_width: int = 150, img_height: int = 100) -> list:
+def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_width: int = 150, img_height: int = 100) -> list:
     """
     Generate question-answer pairs for a given view.
 
