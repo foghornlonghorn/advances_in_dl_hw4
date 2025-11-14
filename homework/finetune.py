@@ -168,6 +168,7 @@ def train(
     model.enable_input_require_grads()
     model.train()
 
+    data_dir = Path(data_dir)
     # Prepare datasets
     train_dataset = VQADataset(train_dataset_name, data_dir)
 
