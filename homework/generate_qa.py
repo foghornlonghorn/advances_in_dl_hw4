@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from math import inf
-
+from functools import partial
 # Define object type mapping
 OBJECT_TYPES = {
     1: "Kart",
@@ -271,8 +271,14 @@ def extract_track_info(info_path: str) -> str:
     with open(info_path) as ipf:
         return json.load(ipf)['track']
 
+def _qa_pair_factory(image_path: str = None, question: str = None, answer: str = None) -> dict:
+    return {
+        'image_path': image_path,
+        'question': question,
+        'answer': answer
+    }
 
-def generate_qa_pairs(info_path: str, view_index: int, img_width: int = 150, img_height: int = 100) -> list:
+def generate_qa_pairs(info_path: str, view_index: int, image_file: str, img_width: int = 150, img_height: int = 100) -> list:
     """
     Generate question-answer pairs for a given view.
 
@@ -304,14 +310,17 @@ def generate_qa_pairs(info_path: str, view_index: int, img_width: int = 150, img
             ego_kart = kart['kart_name']
             ego_kart_ctr = kart['center']
 
-    qa_pairs.append({'question': q,
-                     'answer': ego_kart})
+    qa_pair_factory = partial(_qa_pair_factory, image_path=image_file)
+
+    qa_pairs.append(qa_pair_factory(*{'question': q,
+                     'answer': ego_kart}))
 
     q = 'How many karts are there in the scenario?'
     # 2. Total karts question
-    qa_pairs.append({'question': q,
-                     'answer': len(kart_objects)})
-
+    qa_pairs.append(qa_pair_factory(*{'question': q,
+                     'answer': len(kart_objects)}))
+    print(qa_pairs)
+    return
     # 3. Track information questions
     qa_pairs.append({'question': 'What track is this?',
                         'answer': extract_track_info(info_path)})
@@ -392,7 +401,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pairs.json"))
 
             # Generate QA pairs
-            qa_pairs = generate_qa_pairs(info_file, int(view_index))
+            qa_pairs = generate_qa_pairs(info_file, image_file, int(view_index))
 
             # print(qa_pairs)
             # print(qa_file)
@@ -444,7 +453,7 @@ def check_qa_pairs(info_file: str, view_index: int):
     plt.show()
 
     # Generate QA pairs
-    qa_pairs = generate_qa_pairs(info_file, view_index)
+    qa_pairs = generate_qa_pairs(info_file, image_file, view_index)
 
     # Print QA pairs
     print("\nQuestion-Answer Pairs:")
