@@ -90,7 +90,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
     return captions
 
-def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False):
+def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False, total=200):
     """
     Check QA pairs for a specific info file and view index.
 
@@ -102,8 +102,11 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
     info_files = source_dir.glob("*_info.json")
-
+    count = 0
     for info_file in info_files:
+        if count > total:
+            return
+        count += 1
         base_name = info_file.stem.replace("_info", "")
         image_files = list(info_file.parent.glob(f"{base_name}_*_im.jpg"))
 
