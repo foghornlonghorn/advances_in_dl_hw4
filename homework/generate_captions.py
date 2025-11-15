@@ -59,27 +59,27 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
         front_cars = 0
         behind_cars = 0
         if x > ego_kart_ctr[0]:
-            captions.append({'image_file': str(image_file),
-                             'caption': caption.format(kart_name=kart_name,
-                                                       position='left')})
+            # captions.append({'image_file': str(image_file),
+            #                  'caption': caption.format(kart_name=kart_name,
+            #                                            position='left')})
             relative_pos += 'left and '
             left_cars += 1
         else:
-            captions.append({'image_file': str(image_file),
-                             'caption': caption.format(kart_name=kart_name,
-                                                       position='right')})
+            # captions.append({'image_file': str(image_file),
+            #                  'caption': caption.format(kart_name=kart_name,
+            #                                            position='right')})
             relative_pos += 'right and '
             right_cars += 1
         if y > ego_kart_ctr[1]:
-            captions.append({'image_file': str(image_file),
-                            'caption': caption.format(kart_name=kart_name,
-                                                      position='behind')})
+            # captions.append({'image_file': str(image_file),
+            #                 'caption': caption.format(kart_name=kart_name,
+            #                                           position='behind')})
             relative_pos += 'behind'
             behind_cars += 1
         else:
-            captions.append({'image_file': str(image_file),
-                             'caption': caption.format(kart_name=kart_name,
-                                                       position='front')})
+            # captions.append({'image_file': str(image_file),
+            #                  'caption': caption.format(kart_name=kart_name,
+            #                                            position='front')})
 
             relative_pos += 'front'
             front_cars += 1
