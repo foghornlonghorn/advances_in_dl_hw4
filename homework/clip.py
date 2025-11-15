@@ -185,10 +185,13 @@ class CLIP(nn.Module):
         #text_encoded = self.encode_text()
         print(pixel_values)
         print(type(pixel_values))
+        print(pixel_values.shape)
         print(input_ids)
         print(type(input_ids))
+        print(input_ids.shape)
         print(attention_mask)
         print(type(attention_mask))
+        print(attention_mask.shape)
         print(labels)
         print(type(labels))
 
