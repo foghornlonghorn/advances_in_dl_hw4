@@ -90,7 +90,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
     return captions
 
-def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False, total=100):
+def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False, total=200):
     """
     Check QA pairs for a specific info file and view index.
 
