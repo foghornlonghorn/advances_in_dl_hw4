@@ -117,10 +117,9 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             # Generate QA pairs
             captions = generate_captions(info_file, image_file, int(view_index))
 
-            print(captions_file)
-
             # Display the image
             if display_images:
+                print(captions_file)
                 print(captions)
 
                 # Visualize detections

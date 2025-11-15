@@ -403,10 +403,9 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             # Generate QA pairs
             qa_pairs = generate_qa_pairs(info_file, image_file, int(view_index))
 
-            print(qa_file)
-
             # Display the image
             if display_images:
+                print(qa_file)
                 print(qa_pairs)
                 # Visualize detections
                 annotated_image = draw_detections(str(image_file), info_file)
