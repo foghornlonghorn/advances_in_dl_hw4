@@ -343,7 +343,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         right_cars = 0
         front_cars = 0
         behind_cars = 0
-        if x > ego_kart_ctr[0]:
+        if x < ego_kart_ctr[0]:
             qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
                               'answer': 'left'}))
             relative_pos += 'left and '
