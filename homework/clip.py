@@ -115,7 +115,7 @@ class CLIP(nn.Module):
         # average pooling?
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
-            torch.nn.Linear(110592, self.proj_dim),
+            torch.nn.Linear(192*192, self.proj_dim),
             torch.nn.LayerNorm(self.proj_dim),
         )
 
@@ -217,6 +217,7 @@ class CLIP(nn.Module):
         # normalize features and return normalized features and logit scale
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         print(dir(venc))
+        print(venc.shape)
         # perform average pooling
         vresult = self.vision_net.forward(venc)
 
