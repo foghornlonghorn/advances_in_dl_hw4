@@ -215,13 +215,13 @@ class CLIP(nn.Module):
         # encode text and pass in attention mask
         # take last hidden state and project both down to common space
         # normalize features and return normalized features and logit scale
-        venc = self.vision_encoder(pixel_values=pixel_values) # TODO get last hidden state
+        venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         print(dir(venc))
         # perform average pooling
         vresult = self.vision_net.forward(venc)
 
 
-        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask) # TODO get last hidden state
+        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden state
         #masked_text = text_enc @ attention_mask
         print(dir(text_enc))
         # get rid of padding tokens
