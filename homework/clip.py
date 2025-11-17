@@ -124,7 +124,7 @@ class CLIP(nn.Module):
             torch.nn.LayerNorm(self.proj_dim),
         )
 
-        self.logit_scaling = torch.nn.Parameter(torch.log(1/self.temperature))
+        self.logit_scaling = torch.nn.Parameter(torch.tensor(torch.log(1/self.temperature)))
         # raise NotImplementedError("Not implemented")
 
     def encode_image(self, image: torch.Tensor) -> torch.Tensor:
