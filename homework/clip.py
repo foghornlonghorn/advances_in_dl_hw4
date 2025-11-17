@@ -116,12 +116,12 @@ class CLIP(nn.Module):
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
             torch.nn.Linear(192*192, self.proj_dim),
-            torch.nn.LayerNorm(self.proj_dim)
+            torch.nn.LayerNorm(self.proj_dim),
         )
 
         self.text_net = torch.nn.Sequential(
             torch.nn.Linear(32, self.proj_dim),
-            torch.nn.functional.normalize(dim=-1),
+            torch.nn.LayerNorm(self.proj_dim),
         )
 
         self.logit_scaling = torch.nn.Parameter(torch.log(1/self.temperature))
