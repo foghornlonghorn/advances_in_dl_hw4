@@ -93,6 +93,14 @@ class CaptionDatasetForTraining(Dataset):
             "labels": input_ids,  # placeholder to fit the collator
         }
 
+# we trained a model to answer questions about the image
+# clip model is trained on captions
+# clip is trying to retreive information, e.g. retrieve all images that have this particular track (by virtue of the caption)
+# try and generate captions for similar images
+# have embedding of caption and image; a cluster
+# contrastive loss
+
+
 
 class CLIP(nn.Module):
     def __init__(
@@ -103,7 +111,20 @@ class CLIP(nn.Module):
         self.text_encoder = text_encoder
         self.proj_dim = proj_dim
         self.temperature = temperature
-        # TODO: implement the rest components
+
+        # average pooling?
+        self.vision_net = torch.nn.Sequential(
+            torch.nn.Flatten(),
+            torch.nn.Linear(192*192, self.proj_dim),
+            tv.transforms.Normalize(),
+        )
+
+        self.text_net = torch.nn.Sequential(
+            torch.nn.Linear(32, self.proj_dim),
+            torch.nn.functional.normalize(dim=-1),
+        )
+
+        self.logit_scaling = torch.nn.Parameter(torch.log(1/self.temperature))
         # raise NotImplementedError("Not implemented")
 
     def encode_image(self, image: torch.Tensor) -> torch.Tensor:
@@ -182,18 +203,38 @@ class CLIP(nn.Module):
         Returns:
             TODO: think about the what values should be returned
         """
+
+        # use a linear layer for projection
+        # use normalize from pytorch for normalization over last dimension (projection dimension)
+
+        # project 'vision' onto a projection dimension -- both text and image
+        # do logit scaling -- torch parameter  nn.parameter log over 1 over the temperature; a single floating point value
+        # have encoders that you can utilize
+        # you can utilize the last hidden state from vision encoder
+        # do some average pooling on vision encoder
+        # encode text and pass in attention mask
+        # take last hidden state and project both down to common space
+        # normalize features and return normalized features and logit scale
+        venc = self.vision_encoder(pixel_values=pixel_values) # TODO get last hidden state
+        print(dir(venc))
+        # perform average pooling
+        vresult = self.vision_net.forward(venc)
+
+
+        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask) # TODO get last hidden state
+        #masked_text = text_enc @ attention_mask
+        print(dir(text_enc))
+        # get rid of padding tokens
+        tresult = self.text_net.forward(text_enc)
+
+        return vresult, tresult, self.logit_scaling
+
+        #pixel_values -> torch.Size([1024, 3, 192, 192])
+        #input_ids -> torch.Size([1024, 17])
+        # attention_mask -> torch.Size([1024, 17])
+        #labels -> None (nothing here)
         #text_encoded = self.encode_text()
-        print(pixel_values)
-        print(type(pixel_values))
-        print(pixel_values.shape)
-        print(input_ids)
-        print(type(input_ids))
-        print(input_ids.shape)
-        print(attention_mask)
-        print(type(attention_mask))
-        print(attention_mask.shape)
-        print(labels)
-        print(type(labels))
+
 
 
 def compute_clip_loss(
@@ -212,6 +253,7 @@ def compute_clip_loss(
     Returns:
         The loss for the CLIP model.
     """
+    # similarity between vision and text features; cross-entropy with labels; one similarity and one similarity with transpose of labels; return arithmetic average
     raise NotImplementedError("Not implemented")
 
 
