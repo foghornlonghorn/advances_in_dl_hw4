@@ -115,7 +115,7 @@ class CLIP(nn.Module):
         # average pooling?
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
-            torch.nn.Linear(192*192, self.proj_dim),
+            torch.nn.Linear(1024*1024, self.proj_dim),
             torch.nn.LayerNorm(self.proj_dim),
         )
 
