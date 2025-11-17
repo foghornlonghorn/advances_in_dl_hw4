@@ -116,7 +116,7 @@ class CLIP(nn.Module):
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
             torch.nn.Linear(192*192, self.proj_dim),
-            tv.transforms.Normalize(),
+            torch.nn.LayerNorm(self.proj_dim)
         )
 
         self.text_net = torch.nn.Sequential(
