@@ -124,8 +124,10 @@ class CLIP(nn.Module):
             torch.nn.LayerNorm(self.proj_dim),
         )
 
-        self.logit_scaling = torch.nn.Parameter(torch.log(torch.tensor(1/self.temperature)))
+        self.logit_scale = torch.nn.Parameter(torch.log(torch.tensor(1/self.temperature)))
         # raise NotImplementedError("Not implemented")
+
+        self.loss_fn = torch.nn.CrossEntropyLoss()
 
     def encode_image(self, image: torch.Tensor) -> torch.Tensor:
         return self.vision_encoder(image)
@@ -218,24 +220,29 @@ class CLIP(nn.Module):
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         print(venc.shape)
         # perform average pooling
-        pooled = self.avg_pool(venc)
+        pooled = venc.mean()
         vresult = self.vision_net.forward(pooled)
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden state
+
+        # project both to a common space use helper method
+        # return text and image features
+
         #masked_text = text_enc @ attention_mask
         print(dir(text_enc))
         print(text_enc.shape)
-        # get rid of padding tokens
+        # get rid of padding tokens -- you can find the last token don't use a special token
+        # input_ids argmax?
+        # or remove all special tokens, set them to 0?
         tresult = self.text_net.forward(text_enc)
 
-        return vresult, tresult, self.logit_scaling
+        return vresult, tresult, self.logit_scale
 
         #pixel_values -> torch.Size([1024, 3, 192, 192])
         #input_ids -> torch.Size([1024, 17])
         # attention_mask -> torch.Size([1024, 17])
         #labels -> None (nothing here)
         #text_encoded = self.encode_text()
-
 
 
 def compute_clip_loss(
@@ -255,7 +262,18 @@ def compute_clip_loss(
         The loss for the CLIP model.
     """
     # similarity between vision and text features; cross-entropy with labels; one similarity and one similarity with transpose of labels; return arithmetic average
-    raise NotImplementedError("Not implemented")
+    # create an n x m how similar is i to j
+    # diagonal are the most similar -- the ground truth labels
+    # low similarity
+    # create a similarity matrix
+    # matmul transpose text features and image features
+    # logit_scale converts matrix to linear space
+    loss_fn = torch.nn.CrossEntropy()
+    text_to_img_loss = loss_fn(outputs[0])
+    img_to_text_loss = loss_fn(outputs[1])
+
+    return (loss1 + loss2).mean()
+    #raise NotImplementedError("Not implemented")
 
 
 def get_target_modules_for_lora(model: nn.Module) -> list[str]:
