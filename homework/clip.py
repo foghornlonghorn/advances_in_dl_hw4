@@ -216,25 +216,21 @@ class CLIP(nn.Module):
         # take last hidden state and project both down to common space
         # normalize features and return normalized features and logit scale
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
-        print(venc.shape)
+        #print(venc.shape)
         # perform average pooling
         #pooled = venc.mean(dim=-1)
         pooled = self.pool(venc)
         vresult = self.vision_net.forward(pooled)
 
-        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden state
-
-        # project both to a common space use helper method
-        # return text and image features
-
-        #masked_text = text_enc @ attention_mask
-        print(dir(text_enc))
-        print(text_enc.shape)
+        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden         #print(text_enc.shape)
         # get rid of padding tokens -- you can find the last token don't use a special token
         # input_ids argmax?
         # or remove all special tokens, set them to 0?
         maxxed = text_enc.max(dim=-1).values
         tresult = self.text_net.forward(maxxed)
+
+        print(vresult.shape)
+        print(tresult.shape)
 
         return vresult, tresult, self.logit_scale
 
