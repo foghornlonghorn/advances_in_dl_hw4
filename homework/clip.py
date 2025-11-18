@@ -112,7 +112,7 @@ class CLIP(nn.Module):
         self.proj_dim = proj_dim
         self.temperature = temperature
 
-        # average pooling?
+        self.avg_pool = torch.nn.AvgPool2d(192*192)
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
             torch.nn.Linear(192*192, self.proj_dim),
@@ -216,15 +216,15 @@ class CLIP(nn.Module):
         # take last hidden state and project both down to common space
         # normalize features and return normalized features and logit scale
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
-        print(dir(venc))
         print(venc.shape)
         # perform average pooling
-        vresult = self.vision_net.forward(venc)
-
+        pooled = self.avg_pool(venc)
+        vresult = self.vision_net.forward(pooled)
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden state
         #masked_text = text_enc @ attention_mask
         print(dir(text_enc))
+        print(text_enc.shape)
         # get rid of padding tokens
         tresult = self.text_net.forward(text_enc)
 
