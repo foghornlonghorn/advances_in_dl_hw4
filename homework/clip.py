@@ -277,8 +277,8 @@ def compute_clip_loss(
     print(scaled.T.shape)
 
     loss_fn = torch.nn.CrossEntropyLoss()
-    text_to_img_loss = loss_fn(labels, sim_matrix.T.diagonal()[torch.arange(0, labels.shape[1])])
-    img_to_text_loss = loss_fn(labels, sim_matrix.diagonal()[torch.arange(0, labels.shape[1])])
+    text_to_img_loss = loss_fn(labels, sim_matrix.T[:, torch.arange(0, labels.shape[0])])
+    img_to_text_loss = loss_fn(labels, sim_matrix[:, torch.arange(0, labels.shape[0])])
 
     return (text_to_img_loss + img_to_text_loss).mean()
 
