@@ -112,10 +112,10 @@ class CLIP(nn.Module):
         self.proj_dim = proj_dim
         self.temperature = temperature
 
-        self.avg_pool = torch.nn.AvgPool2d(192*192)
+        self.pool = torch.nn.MaxPool1d(768)
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
-            torch.nn.Linear(192*192, self.proj_dim),
+            torch.nn.Linear(144, self.proj_dim),
             torch.nn.LayerNorm(self.proj_dim),
         )
 
@@ -220,7 +220,8 @@ class CLIP(nn.Module):
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         print(venc.shape)
         # perform average pooling
-        pooled = venc.mean()
+        #pooled = venc.mean(dim=-1)
+        pooled = self.pool(venc)
         vresult = self.vision_net.forward(pooled)
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden state
@@ -268,6 +269,8 @@ def compute_clip_loss(
     # create a similarity matrix
     # matmul transpose text features and image features
     # logit_scale converts matrix to linear space
+    similarity_matrix = outputs[0] @ outputs[1].mT
+    scaled = outputs[2] * similarity_matrix
     loss_fn = torch.nn.CrossEntropy()
     text_to_img_loss = loss_fn(outputs[0])
     img_to_text_loss = loss_fn(outputs[1])
