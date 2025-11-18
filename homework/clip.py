@@ -268,8 +268,8 @@ def compute_clip_loss(
     print('loss')
     print(labels.shape)
     print(num_items_in_batch)
-    print(outputs[0].shape)
-    print(outputs[1].shape)
+    # print(outputs[0].shape)
+    # print(outputs[1].shape)
     similarity_matrix = outputs[0] @ outputs[1].T
     scaled = torch.exp(outputs[2]) * similarity_matrix
     print(similarity_matrix.shape)
@@ -277,11 +277,11 @@ def compute_clip_loss(
     print(scaled.T.shape)
 
     loss_fn = torch.nn.CrossEntropyLoss()
-    text_to_img_loss = loss_fn(labels, scaled.T)
-    img_to_text_loss = loss_fn(labels, scaled)
+    text_to_img_loss = loss_fn(labels, scaled.T.diagonal)
+    img_to_text_loss = loss_fn(labels, scaled.diagonal)
 
     return (text_to_img_loss + img_to_text_loss).mean()
-    #raise NotImplementedError("Not implemented")
+
 
 
 def get_target_modules_for_lora(model: nn.Module) -> list[str]:
