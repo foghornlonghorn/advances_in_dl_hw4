@@ -235,7 +235,7 @@ class CLIP(nn.Module):
         # get rid of padding tokens -- you can find the last token don't use a special token
         # input_ids argmax?
         # or remove all special tokens, set them to 0?
-        maxxed = text_enc.max(dim=-1)
+        maxxed = text_enc.max(dim=-1).values
         tresult = self.text_net.forward(maxxed)
 
         return vresult, tresult, self.logit_scale
