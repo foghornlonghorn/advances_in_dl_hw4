@@ -272,7 +272,7 @@ def compute_clip_loss(
     print(num_items_in_batch)
     similarity_matrix = outputs[0] @ outputs[1].mT
     scaled = outputs[2] * similarity_matrix
-    loss_fn = torch.nn.CrossEntropy()
+    loss_fn = torch.nn.CrossEntropyLoss()
     text_to_img_loss = loss_fn(outputs[0])
     img_to_text_loss = loss_fn(outputs[1])
 
