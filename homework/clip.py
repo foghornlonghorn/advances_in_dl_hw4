@@ -127,8 +127,6 @@ class CLIP(nn.Module):
         self.logit_scale = torch.nn.Parameter(torch.log(torch.tensor(1/self.temperature)))
         # raise NotImplementedError("Not implemented")
 
-        self.loss_fn = torch.nn.CrossEntropyLoss()
-
     def encode_image(self, image: torch.Tensor) -> torch.Tensor:
         return self.vision_encoder(image)
 
@@ -270,6 +268,8 @@ def compute_clip_loss(
     # create a similarity matrix
     # matmul transpose text features and image features
     # logit_scale converts matrix to linear space
+    print(labels)
+    print(num_items_in_batch)
     similarity_matrix = outputs[0] @ outputs[1].mT
     scaled = outputs[2] * similarity_matrix
     loss_fn = torch.nn.CrossEntropy()
