@@ -273,11 +273,15 @@ def compute_clip_loss(
     print(num_items_in_batch)
     print(outputs[0].shape)
     print(outputs[1].shape)
-    similarity_matrix = outputs[0] @ outputs[1].mT
-    scaled = outputs[2] * similarity_matrix
+    similarity_matrix = outputs[0] @ outputs[1].T
+    scaled = torch.exp(outputs[2]) * similarity_matrix
+    print(similarity_matrix.shape)
+    print(scaled.shape)
+    print(scaled.T.shape)
+
     loss_fn = torch.nn.CrossEntropyLoss()
-    text_to_img_loss = loss_fn(scaled)
-    img_to_text_loss = loss_fn(scaled)
+    text_to_img_loss = loss_fn(labels, scaled.T)
+    img_to_text_loss = loss_fn(labels, scaled)
 
     return (text_to_img_loss + img_to_text_loss).mean()
     #raise NotImplementedError("Not implemented")
