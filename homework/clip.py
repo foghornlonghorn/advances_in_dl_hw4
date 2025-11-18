@@ -270,13 +270,15 @@ def compute_clip_loss(
     # logit_scale converts matrix to linear space
     print(labels)
     print(num_items_in_batch)
+    print(outputs[0].shape)
+    print(outputs[1].shape)
     similarity_matrix = outputs[0] @ outputs[1].mT
     scaled = outputs[2] * similarity_matrix
     loss_fn = torch.nn.CrossEntropyLoss()
-    text_to_img_loss = loss_fn(outputs[0])
-    img_to_text_loss = loss_fn(outputs[1])
+    text_to_img_loss = loss_fn(scaled)
+    img_to_text_loss = loss_fn(scaled)
 
-    return (loss1 + loss2).mean()
+    return (text_to_img_loss + img_to_text_loss).mean()
     #raise NotImplementedError("Not implemented")
 
 
