@@ -269,6 +269,7 @@ def compute_clip_loss(
     # matmul transpose text features and image features
     # logit_scale converts matrix to linear space
     print(labels)
+    print(labels.shape)
     print(num_items_in_batch)
     print(outputs[0].shape)
     print(outputs[1].shape)
