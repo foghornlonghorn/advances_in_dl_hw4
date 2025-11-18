@@ -120,7 +120,7 @@ class CLIP(nn.Module):
         )
 
         self.text_net = torch.nn.Sequential(
-            torch.nn.Linear(32, self.proj_dim),
+            torch.nn.Linear(17, self.proj_dim),
             torch.nn.LayerNorm(self.proj_dim),
         )
 
