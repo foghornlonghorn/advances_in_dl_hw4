@@ -264,7 +264,8 @@ def compute_clip_loss(
     # create a similarity matrix
     # matmul transpose text features and image features
     # logit_scale converts matrix to linear space
-    print(labels)
+    #print(labels)
+    print('loss')
     print(labels.shape)
     print(num_items_in_batch)
     print(outputs[0].shape)
