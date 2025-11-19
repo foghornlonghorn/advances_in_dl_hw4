@@ -257,37 +257,25 @@ def compute_clip_loss(
     Returns:
         The loss for the CLIP model.
     """
-    # similarity between vision and text features; cross-entropy with labels; one similarity and one similarity with transpose of labels; return arithmetic average
-    # create an n x m how similar is i to j
-    # diagonal are the most similar -- the ground truth labels
-    # low similarity
-    # create a similarity matrix
-    # matmul transpose text features and image features
-    # logit_scale converts matrix to linear space
-    #print(labels)
     print('loss')
     print(labels.shape)
-    print(num_items_in_batch)
-    # print(outputs[0].shape)
-    # print(outputs[1].shape)
+
     sim_matrix = outputs[0] @ outputs[1].T
     scaled = torch.exp(outputs[2]) * sim_matrix
+
     print(sim_matrix.shape)
-    print(scaled.shape)
-    print(scaled.T.shape)
 
     loss_fn = torch.nn.CrossEntropyLoss()
-    text_to_img = sim_matrix.T[:, torch.arange(0, labels.shape[1])]
-    img_to_text = sim_matrix[:, torch.arange(0, labels.shape[1])]
+    text_to_img = scaled.T[:, torch.arange(0, labels.shape[1])]
+    img_to_text = scaled[:, torch.arange(0, labels.shape[1])]
     print(text_to_img.shape)
     print(img_to_text.shape)
-    print(labels.dtype)
+
     labels_float = labels.float()
     text_to_img_loss = loss_fn(labels_float, text_to_img)
     img_to_text_loss = loss_fn(labels_float, img_to_text)
 
     return (text_to_img_loss + img_to_text_loss).mean()
-
 
 
 def get_target_modules_for_lora(model: nn.Module) -> list[str]:
