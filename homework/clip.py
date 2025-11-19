@@ -281,6 +281,7 @@ def compute_clip_loss(
     img_to_text = sim_matrix[:, torch.arange(0, labels.shape[1])]
     print(text_to_img.shape)
     print(img_to_text.shape)
+    print(labels.dtype)
     text_to_img_loss = loss_fn(labels, text_to_img)
     img_to_text_loss = loss_fn(labels, img_to_text)
 
