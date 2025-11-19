@@ -121,7 +121,7 @@ class CLIP(nn.Module):
         )
 
         self.text_net = torch.nn.Sequential(
-            torch.nn.Linear(17, self.proj_dim),
+            torch.nn.Linear(1, self.proj_dim),
             torch.nn.LayerNorm(self.proj_dim),
         )
 
@@ -211,7 +211,7 @@ class CLIP(nn.Module):
 
         print(dir(text_encoder))
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask, ).last_hidden_state # TODO get last hidden
-        maxxed = text_enc.max(dim=-1).values
+        maxxed = text_enc.max(dim=-1).values[0]
         tresult = self.text_net.forward(maxxed)
 
         print(vresult.shape)
