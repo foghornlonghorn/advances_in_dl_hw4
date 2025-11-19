@@ -26,6 +26,7 @@ def load(model_name: str = "clip_model"):
     model_path = Path(__file__).parent / model_name
 
     vlm = BaseVLM()
+
     vision_encoder = vlm.model.model.vision_model
     text_encoder = vlm.model.model.text_model
     clip = CLIP(vision_encoder, text_encoder)
@@ -204,28 +205,12 @@ class CLIP(nn.Module):
             TODO: think about the what values should be returned
         """
 
-        # use a linear layer for projection
-        # use normalize from pytorch for normalization over last dimension (projection dimension)
-
-        # project 'vision' onto a projection dimension -- both text and image
-        # do logit scaling -- torch parameter  nn.parameter log over 1 over the temperature; a single floating point value
-        # have encoders that you can utilize
-        # you can utilize the last hidden state from vision encoder
-        # do some average pooling on vision encoder
-        # encode text and pass in attention mask
-        # take last hidden state and project both down to common space
-        # normalize features and return normalized features and logit scale
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
-        #print(venc.shape)
-        # perform average pooling
-        #pooled = venc.mean(dim=-1)
         pooled = self.pool(venc)
         vresult = self.vision_net.forward(pooled)
 
-        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden         #print(text_enc.shape)
-        # get rid of padding tokens -- you can find the last token don't use a special token
-        # input_ids argmax?
-        # or remove all special tokens, set them to 0?
+        print(dir(text_encoder))
+        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask, ).last_hidden_state # TODO get last hidden
         maxxed = text_enc.max(dim=-1).values
         tresult = self.text_net.forward(maxxed)
 
