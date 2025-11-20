@@ -149,12 +149,36 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
         # class_id: object type
         # track_id: object in seq of detected objects
         kart_ctrs = {}
+        kart_detections = {}
         for i, detection in enumerate(data['detections'][view_index]):
             try:
                 if OBJECT_TYPES[detection[0]] != OBJECT_TYPES[1]:
                     continue
             except KeyError as e:
                 continue
+
+            # if area of detection is < a certain size disregard it?
+            # if part of the cart is off screen maybe remove it
+            # maybe this will perform better
+            #
+            x_delta = abs(detection[2] - detection[4])
+            y_delta = abs(detection[3] - detection[5])
+
+            kart_size_threshold = 20
+            print(f'size {x_delta * y_delta}')
+            if x_delta * y_delta <= kart_size_threshold:
+                continue
+
+            # skip karts far on the side
+            if any([detection[2] == 0, detection[3] == 0, detection[4] ==  (ORIGINAL_WIDTH - 1), detection[5] == (ORIGINAL_HEIGHT - 1)]):
+                threshold = 100
+                print('on the side')
+                if x_delta * y_delta < threshold:
+                    continue
+
+            detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
+                              (abs(detection[3] - detection[5]) / 2) * height_factor]
+
 
             instance_id = detection[1]
             kart_name = data['karts'][instance_id]
@@ -168,6 +192,8 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                  karts[kart_name] = kart
             else:
                 kart = karts[kart_name]
+
+            kart_detections[kart_name] = [detection[2], detection[3], detection[4], detection[5]]
 
             if instance_id not in kart_ctrs:
                 kart_ctrs[kart_name] = []
@@ -193,6 +219,24 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             karts[k]['center'] = torch.tensor(kart_ctrs[k], dtype=float).mean(dim=0)
 
         karts[ctr_kart]['is_center_kart'] = True
+
+        ctr_kart_detections = kart_detections[ctr_kart]
+        karts_to_delete = []
+        for k in karts.keys():
+            if k == ctr_kart:
+                continue
+            other_kart_detections = kart_detections[k]
+            if other_kart_detections[0] > ctr_kart_detections[0] \
+               and other_kart_detections[1] > ctr_kart_detections[1] \
+               and other_kart_detections[2] < ctr_kart_detections[2] \
+               and other_kart_detections[3] < ctr_kart_detections[3]:
+                karts_to_delete.append(k)
+
+        for k in karts_to_delete:
+            del karts[k]
+
+
+
         return karts.values()
 
 def extract_kart_objects(
