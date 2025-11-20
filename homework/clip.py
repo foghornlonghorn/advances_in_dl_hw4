@@ -209,8 +209,11 @@ class CLIP(nn.Module):
         pooled = self.pool(venc)
         vresult = self.vision_net.forward(pooled)
 
-        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask, ).last_hidden_state # TODO get last hidden
+        text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden
         maxxed = text_enc.max(dim=-1).values[0]
+        print(text_enc.shape)
+        print(maxxed.shape)
+
         tresult = self.text_net.forward(maxxed)
 
         print(vresult.shape)
