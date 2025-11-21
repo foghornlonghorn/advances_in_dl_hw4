@@ -261,8 +261,8 @@ def compute_clip_loss(
     loss_fn = torch.nn.CrossEntropyLoss()
 
     diagonal = scaled.diagonal()
-    text_to_img = diagonal.T[:, torch.arange(0, labels.shape[1])]
-    img_to_text = diagonal[:, torch.arange(0, labels.shape[1])]
+    text_to_img = diagonal.T[torch.arange(0, labels.shape[1])]
+    img_to_text = diagonal[torch.arange(0, labels.shape[1])]
     print(text_to_img.shape)
     print(img_to_text.shape)
 
