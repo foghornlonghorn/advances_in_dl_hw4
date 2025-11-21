@@ -211,7 +211,7 @@ class CLIP(nn.Module):
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden
         #maxxed = text_enc.max(dim=-1).values[0]
-        print(tex_enc)
+        print(text_enc)
         maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
         print(text_enc.shape)
         print(maxxed.shape)
