@@ -142,7 +142,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
         data = json.load(ipf)
         width_factor = img_width / ORIGINAL_WIDTH
         height_factor = img_height / ORIGINAL_HEIGHT
-        ctr = [img_width / 2, img_height / 2]
+        ctr = [img_width * .5, img_height * (2/3)]
         karts = {}
 
         #     class_id, track_id, x1, y1, x2, y2 = detection
@@ -179,9 +179,6 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                     print(f'{kart_name} on the side')
                     continue
 
-            detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
-                              (abs(detection[3] - detection[5]) / 2) * height_factor]
-
             if kart_name not in karts:
                  kart = {
                      'kart_name': kart_name,
@@ -198,8 +195,9 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             if instance_id not in kart_ctrs:
                 kart_ctrs[kart_name] = []
 
-            detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
-                              (abs(detection[3] - detection[5]) / 2) * height_factor]
+            detection_ctr = [ (abs(detection[2] - detection[4]) / 2 + detection[2]) * width_factor,
+                              (abs(detection[3] - detection[5]) / 2 + detection[3]) * height_factor]
+            print(f'{kart_name} center {detection_ctr}')
             kart_ctrs[kart_name].append(detection_ctr)
 
         # find cart centers and ego cart
@@ -210,7 +208,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
 
             for ctr_ in kart_ctrs_:
 
-                detection_delta_avg = (abs(sum(ctr) / 2) - (sum(ctr_)) / 2)
+                detection_delta_avg = (abs(ctr[0] - ctr_[0]) + abs(ctr[1] - ctr_[1]) * 2/3) / 2
 
                 if detection_delta_avg <= delta_min:
                     delta_min = detection_delta_avg
@@ -232,9 +230,9 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                and other_kart_detections[3] < ctr_kart_detections[3]:
                 karts_to_delete.append(k)
 
-        for k in karts_to_delete:
-            print(f'{k} is covered by the ego car')
-            del karts[k]
+        # for k in karts_to_delete:
+        #     print(f'{k} is covered by the ego car')
+        #     del karts[k]
 
         return karts.values()
 
@@ -265,39 +263,6 @@ def extract_kart_objects(
         height_factor = img_height / ORIGINAL_HEIGHT
         ctr = [img_width / 2, img_height / 2]
         karts = data['karts']
-
-        #     class_id, track_id, x1, y1, x2, y2 = detection
-        # class_id: object type
-        # track_id: object in seq of detected objects
-        # for i, detections in enumerate(data['detections'][view_index]):
-        #     kart = {
-        #         'kart_name': karts[i],
-        #         'is_center_kart': False,
-        #         'instance_id': None,
-        #         'center': [inf, inf],
-        #     }
-        #     delta_min = inf
-        #     ctr = [inf, inf]
-        #     kart_idx = -1
-        #     # focus on detection[view_index]
-        #     for detection in detections:
-        #         # assign instance_id -> detection[1]
-        #         if detection[0] != OBJECT_TYPES[1]:
-        #             continue
-        #         detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
-        #                           (abs(detection[3] - detection[5]) / 2) * height_factor]
-
-        #         detection_delta_avg = (sum(ctr) / 2) - (sum(detection_ctr) / 2)
-        #         if detection_delta_avg <= delta_min:
-        #             ctr = detection_ctr
-        #             delta_min = detection_delta_avg
-        #             kart_idx = data['karts'][detection[1]]
-
-        #     kart['center'] = ctr
-        #     kart['is_center_kart'] = kart['kart_name'] == karts[kart_idx]
-        #     objs.append(kart)
-
-        #return objs
 
         return _get_relative_cart_data(info_path, img_width, img_height, view_index)
 

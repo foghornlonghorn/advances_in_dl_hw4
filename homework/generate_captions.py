@@ -58,7 +58,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
         right_cars = 0
         front_cars = 0
         behind_cars = 0
-        if x > ego_kart_ctr[0]:
+        if x < ego_kart_ctr[0]:
             # captions.append({'image_file': str(image_file),
             #                  'caption': caption.format(kart_name=kart_name,
             #                                            position='left')})
