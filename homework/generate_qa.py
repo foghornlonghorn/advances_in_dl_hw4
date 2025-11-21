@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import torch
-
+from pprint import pprint as print
 import fire
 import matplotlib.pyplot as plt
 import numpy as np
@@ -142,7 +142,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
         data = json.load(ipf)
         width_factor = img_width / ORIGINAL_WIDTH
         height_factor = img_height / ORIGINAL_HEIGHT
-        ctr = [img_width * .5, img_height * (2/3)]
+        expected_ego_kart_ctr = [img_width * .5, img_height * (2/3)]
         karts = {}
 
         #     class_id, track_id, x1, y1, x2, y2 = detection
@@ -167,17 +167,19 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             x_delta = abs(detection[2] - detection[4])
             y_delta = abs(detection[3] - detection[5])
 
+            kart_area = x_delta * y_delta
+
             kart_size_threshold = 350
             if x_delta * y_delta <= kart_size_threshold:
                 print(f'{kart_name} too small')
                 continue
 
-            # skip karts far on the side
-            if any([detection[2] == 0, detection[3] == 0, detection[4] ==  (ORIGINAL_WIDTH - 1), detection[5] == (ORIGINAL_HEIGHT - 1)]):
-                threshold = 200
-                if x_delta * y_delta < threshold:
-                    print(f'{kart_name} on the side')
-                    continue
+            # # skip karts far on the side
+            # if any([detection[2] == 0, detection[3] == 0, detection[4] ==  (ORIGINAL_WIDTH - 1), detection[5] == (ORIGINAL_HEIGHT - 1)]):
+            #     threshold = 600 # 10 x 60 so, maybe x and y thresholds
+            #     if x_delta * y_delta < threshold:
+            #         print(f'{kart_name} on the side')
+            #         continue
 
             if kart_name not in karts:
                  kart = {
@@ -185,56 +187,46 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                      'is_center_kart': False,
                      'instance_id': instance_id,
                      'center': [inf, inf],
+                     'area': kart_area
                  }
                  karts[kart_name] = kart
             else:
                 kart = karts[kart_name]
 
-            kart_detections[kart_name] = [detection[2], detection[3], detection[4], detection[5]]
 
-            if instance_id not in kart_ctrs:
-                kart_ctrs[kart_name] = []
 
-            detection_ctr = [ (abs(detection[2] - detection[4]) / 2 + detection[2]) * width_factor,
+            kart['center'] = [(abs(detection[2] - detection[4]) / 2 + detection[2]) * width_factor,
                               (abs(detection[3] - detection[5]) / 2 + detection[3]) * height_factor]
-            print(f'{kart_name} center {detection_ctr}')
-            kart_ctrs[kart_name].append(detection_ctr)
+            print(f'{kart_name} center {kart["center"]}')
 
         # find cart centers and ego cart
         delta_min = inf
 
-        for k in karts.keys():
-            kart_ctrs_ = kart_ctrs[k]
+        karts = karts.values()
+        karts = sorted(karts, key=lambda k: k['area'])
 
-            for ctr_ in kart_ctrs_:
-
-                detection_delta_avg = (abs(ctr[0] - ctr_[0]) + abs(ctr[1] - ctr_[1]) * 2/3) / 2
-
-                if detection_delta_avg <= delta_min:
-                    delta_min = detection_delta_avg
-                    ctr_kart = k
-
-            karts[k]['center'] = torch.tensor(kart_ctrs[k], dtype=float).mean(dim=0)
-
-        karts[ctr_kart]['is_center_kart'] = True
-
-        ctr_kart_detections = kart_detections[ctr_kart]
-        karts_to_delete = []
-        for k in karts.keys():
-            if k == ctr_kart:
+        ctr_kart = None
+        for k in karts:
+            x, y = k['center']
+            if abs(x - expected_ego_kart_ctr[0]) > 15:
                 continue
-            other_kart_detections = kart_detections[k]
-            if other_kart_detections[0] > ctr_kart_detections[0] \
-               and other_kart_detections[1] > ctr_kart_detections[1] \
-               and other_kart_detections[2] < ctr_kart_detections[2] \
-               and other_kart_detections[3] < ctr_kart_detections[3]:
-                karts_to_delete.append(k)
+            if abs(y - expected_ego_kart_ctr[1]) > 15:
+                continue
 
-        # for k in karts_to_delete:
-        #     print(f'{k} is covered by the ego car')
-        #     del karts[k]
+            ctr_kart = k['kart_name']
+            del k['area']
 
-        return karts.values()
+        ctr_kart_assigned = False
+        for k in karts:
+            if k['kart_name'] == ctr_kart:
+                k['is_center_kart'] = True
+                ctr_kart_assigned = True
+
+        if not ctr_kart_assigned:
+            karts[-1]['is_center_kart'] = True
+
+        print(karts)
+        return karts
 
 def extract_kart_objects(
     info_path: str, view_index: int, img_width: int = 150, img_height: int = 100, min_box_size: int = 5
@@ -372,8 +364,8 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
             relative_pos += 'front'
             front_cars += 1
 
-        qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
-                              'answer': relative_pos}))
+        # qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
+        #                       'answer': relative_pos}))
 
         # 5. Counting questions
         qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego car?',
@@ -387,7 +379,28 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
 
     return qa_pairs
 
-def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False):
+def handle_special_file(dest_dir: str = 'data/special_files',
+                        files_to_copy: list = None):
+
+    """
+    Handle special files by copying them to a designated directory.
+
+    Args:
+        dest_dir: Destination directory for special files
+        files_to_copy: List of paths to the special files
+    """
+    dest_dir = Path(dest_dir)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    for file_path in files_to_copy:
+        file_path = Path(file_path)
+        dest_file_path = dest_dir.joinpath(file_path.name)
+        if not dest_file_path.exists():
+            dest_file_path.write_bytes(file_path.read_bytes())
+            print(f'Copied {file_path} to {dest_file_path}')
+
+def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False,
+                  select_images=False):
     """
     Check QA pairs for a specific info file and view index.
 
@@ -426,6 +439,16 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
 
             with open(qa_file, 'w') as qaf:
                 json.dump(qa_pairs, qaf)
+
+            # create yes or no prompt to branch adding specific file
+            if not select_images:
+                continue
+
+            add_file = input(f"Add file {info_file}? (yes/no): ").strip().lower()
+            if add_file.lower() not in ['yes', 'y']:
+                continue
+            handle_special_file(dest_dir='data/special_files',
+                                files_to_copy=[info_file, image_file])
 
         # # Print QA pairs
         # print("\nQuestion-Answer Pairs:")

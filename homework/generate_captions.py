@@ -3,10 +3,13 @@ import json
 from PIL import Image, ImageDraw
 from math import inf
 
+from pprint import pprint as print
+
 import fire
 from matplotlib import pyplot as plt
 
 from generate_qa import draw_detections, extract_frame_info, extract_kart_objects, extract_track_info
+from generate_qa import handle_special_file
 
 
 def generate_captions(info_path: str, image_file: str, view_index: int, img_width: int = 150, img_height: int = 100) -> list:
@@ -15,10 +18,10 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
     """
 
     captions = []
-    with open(info_path) as ipf:
-        data = json.load(ipf)
+    # with open(info_path) as ipf:
+    #     data = json.load(ipf)
 
-    karts = data['karts']
+    # karts = data['karts']
     #distances_down_track = {karts[i]: v, for i, v in enumerate(data['distance_down_track'])}
     kart_objects = extract_kart_objects(info_path, view_index, img_width, img_height)
     image_file = Path(*image_file.parts[1:])
@@ -59,38 +62,40 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
         front_cars = 0
         behind_cars = 0
         if x < ego_kart_ctr[0]:
-            # captions.append({'image_file': str(image_file),
-            #                  'caption': caption.format(kart_name=kart_name,
-            #                                            position='left')})
+            captions.append({'image_file': str(image_file),
+                             'caption': caption.format(kart_name=kart_name,
+                                                       position='left')})
             relative_pos += 'left and '
             left_cars += 1
         else:
-            # captions.append({'image_file': str(image_file),
-            #                  'caption': caption.format(kart_name=kart_name,
-            #                                            position='right')})
+            captions.append({'image_file': str(image_file),
+                             'caption': caption.format(kart_name=kart_name,
+                                                       position='right')})
             relative_pos += 'right and '
             right_cars += 1
         if y > ego_kart_ctr[1]:
-            # captions.append({'image_file': str(image_file),
-            #                 'caption': caption.format(kart_name=kart_name,
-            #                                           position='behind')})
+            captions.append({'image_file': str(image_file),
+                            'caption': caption.format(kart_name=kart_name,
+                                                      position='behind')})
             relative_pos += 'behind'
             behind_cars += 1
         else:
-            # captions.append({'image_file': str(image_file),
-            #                  'caption': caption.format(kart_name=kart_name,
-            #                                            position='front')})
+            captions.append({'image_file': str(image_file),
+                             'caption': caption.format(kart_name=kart_name,
+                                                       position='in front')})
 
-            relative_pos += 'front'
+            relative_pos += 'in front'
             front_cars += 1
 
-        captions.append({'image_file': str(image_file),
-                        'caption': caption.format(kart_name=kart_name,
-                                                  position=relative_pos)})
+        # captions.append({'image_file': str(image_file),
+        #                 'caption': caption.format(kart_name=kart_name,
+        #                                           position=relative_pos)})
 
     return captions
 
-def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False, total=120):
+def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False,
+                  select_images=False,
+                  total=120):
     """
     Check QA pairs for a specific info file and view index.
 
@@ -133,6 +138,15 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
 
             with open(captions_file, 'w') as qaf:
                 json.dump(captions, qaf)
+
+            # create yes or no prompt to branch adding specific file
+            if not select_images:
+                continue
+            add_file = input(f"Add file {info_file}? (yes/no): ").strip().lower()
+            if add_file.lower() not in ['yes', 'y']:
+                continue
+            handle_special_file(dest_dir='data/special_files',
+                                files_to_copy=[info_file, image_file])
 
         # # Print QA pairs
         # print("\nQuestion-Answer Pairs:")
