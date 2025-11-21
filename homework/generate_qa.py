@@ -161,27 +161,27 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             # if part of the cart is off screen maybe remove it
             # maybe this will perform better
             #
+            instance_id = detection[1]
+            kart_name = data['karts'][instance_id]
+
             x_delta = abs(detection[2] - detection[4])
             y_delta = abs(detection[3] - detection[5])
 
-            kart_size_threshold = 300
-            print(f'size {x_delta * y_delta}')
+            kart_size_threshold = 350
             if x_delta * y_delta <= kart_size_threshold:
+                print(f'{kart_name} too small')
                 continue
 
             # skip karts far on the side
             if any([detection[2] == 0, detection[3] == 0, detection[4] ==  (ORIGINAL_WIDTH - 1), detection[5] == (ORIGINAL_HEIGHT - 1)]):
                 threshold = 200
-                print('on the side')
                 if x_delta * y_delta < threshold:
+                    print(f'{kart_name} on the side')
                     continue
 
             detection_ctr = [ (abs(detection[2] - detection[4]) / 2) * width_factor,
                               (abs(detection[3] - detection[5]) / 2) * height_factor]
 
-
-            instance_id = detection[1]
-            kart_name = data['karts'][instance_id]
             if kart_name not in karts:
                  kart = {
                      'kart_name': kart_name,
@@ -233,9 +233,8 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                 karts_to_delete.append(k)
 
         for k in karts_to_delete:
+            print(f'{k} is covered by the ego car')
             del karts[k]
-
-
 
         return karts.values()
 
