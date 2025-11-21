@@ -364,8 +364,8 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
             relative_pos += 'front'
             front_cars += 1
 
-        # qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
-        #                       'answer': relative_pos}))
+        qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
+                              'answer': relative_pos}))
 
         # 5. Counting questions
         qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego car?',
