@@ -109,7 +109,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
     info_files = source_dir.glob("*_info.json")
     count = 0
     for info_file in info_files:
-        if count > total:
+        if count != -1 and count > total:
             return
         count += 1
         base_name = info_file.stem.replace("_info", "")
