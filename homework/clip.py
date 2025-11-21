@@ -257,7 +257,7 @@ def train(
     num_train_epochs: float = 3.,  # for debugging purpose, increase this once the dry run works
     per_device_train_batch_size: int = 1024,
     gradient_accumulation_steps: int = 1,
-    learning_rate: float = 1e-3,
+    learning_rate: float = 5e-4,
     num_workers: int = 2,
 ):
     vlm = BaseVLM()
