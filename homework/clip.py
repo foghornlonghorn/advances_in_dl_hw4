@@ -105,7 +105,7 @@ class CaptionDatasetForTraining(Dataset):
 
 class CLIP(nn.Module):
     def __init__(
-        self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 128, temperature: float = 0.07
+        self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 264, temperature: float = 0.07
     ):
         super().__init__()
         self.vision_encoder = vision_encoder
@@ -240,8 +240,6 @@ def compute_clip_loss(
     # diagonal is the ground truth
     diagonal = scaled.diagonal()
     ground_truth_labels = torch.arange(0, len(diagonal), device=device)
-
-    print(scaled[0].sum())
 
     text_to_img_loss = loss_fn(scaled.T, ground_truth_labels)
     img_to_text_loss = loss_fn(scaled, ground_truth_labels)
