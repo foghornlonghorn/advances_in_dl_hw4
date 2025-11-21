@@ -246,13 +246,16 @@ def compute_clip_loss(
     Returns:
         The loss for the CLIP model.
     """
+    device = outputs[0].device
     print('loss')
     print(labels.shape)
     print(outputs[0].shape)
     print(outputs[1].shape)
     print(outputs[2].shape)
-    sim_matrix = outputs[0] @ outputs[1].T
-    scaled = torch.exp(outputs[2]) * sim_matrix
+    sim_matrix = (outputs[0] @ outputs[1].T).to(device)
+
+    scaled = (torch.exp(outputs[2]) * sim_matrix).to(device)
+
 
     print(sim_matrix)
     print(scaled)
