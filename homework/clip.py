@@ -105,7 +105,7 @@ class CaptionDatasetForTraining(Dataset):
 
 class CLIP(nn.Module):
     def __init__(
-        self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 128, temperature: float = 0.07
+        self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 64, temperature: float = 0.07
     ):
         super().__init__()
         self.vision_encoder = vision_encoder
