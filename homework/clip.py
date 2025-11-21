@@ -248,7 +248,9 @@ def compute_clip_loss(
     """
     print('loss')
     print(labels.shape)
-
+    print(outputs[0].shape)
+    print(outputs[1].shape)
+    print(outputs[2].shape)
     sim_matrix = outputs[0] @ outputs[1].T
     scaled = torch.exp(outputs[2]) * sim_matrix
 
@@ -261,6 +263,7 @@ def compute_clip_loss(
     loss_fn = torch.nn.CrossEntropyLoss()
 
     diagonal = scaled.diagonal()
+    print(diagonal.shape)
     text_to_img = diagonal.T[torch.arange(0, labels.shape[1])]
     img_to_text = diagonal[torch.arange(0, labels.shape[1])]
     print(text_to_img.shape)
