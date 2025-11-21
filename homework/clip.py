@@ -211,6 +211,7 @@ class CLIP(nn.Module):
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden
         #maxxed = text_enc.max(dim=-1).values[0]
+        print(tex_enc)
         maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
         print(text_enc.shape)
         print(maxxed.shape)
@@ -259,8 +260,9 @@ def compute_clip_loss(
 
     loss_fn = torch.nn.CrossEntropyLoss()
 
-    text_to_img = scaled.T[:, torch.arange(0, labels.shape[1])]
-    img_to_text = scaled[:, torch.arange(0, labels.shape[1])]
+    diagonal = scaled.diagonal()
+    text_to_img = diagonal.T[:, torch.arange(0, labels.shape[1])]
+    img_to_text = diagonal[:, torch.arange(0, labels.shape[1])]
     print(text_to_img.shape)
     print(img_to_text.shape)
 
