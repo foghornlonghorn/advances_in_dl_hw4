@@ -269,10 +269,10 @@ def compute_clip_loss(
     #print(text_to_img.shape)
     print(img_to_text.shape)
 
-    labels_float = labels.float()
+    labels_float = labels
 
     #text_to_img_loss = loss_fn(labels_float, text_to_img)
-    img_to_text_loss = loss_fn(labels_float, img_to_text)
+    img_to_text_loss = loss_fn(scaled, img_to_text)
 
     return img_to_text_loss
     #return (text_to_img_loss + img_to_text_loss).mean()
