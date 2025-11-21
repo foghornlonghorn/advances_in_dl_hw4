@@ -268,7 +268,7 @@ def train(
     per_device_train_batch_size: int = 1024,
     gradient_accumulation_steps: int = 1,
     learning_rate: float = 5e-4,
-    num_workers: int = 16,
+    num_workers: int = 2,
 ):
     vlm = BaseVLM()
 
