@@ -164,14 +164,14 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             x_delta = abs(detection[2] - detection[4])
             y_delta = abs(detection[3] - detection[5])
 
-            kart_size_threshold = 20
+            kart_size_threshold = 300
             print(f'size {x_delta * y_delta}')
             if x_delta * y_delta <= kart_size_threshold:
                 continue
 
             # skip karts far on the side
             if any([detection[2] == 0, detection[3] == 0, detection[4] ==  (ORIGINAL_WIDTH - 1), detection[5] == (ORIGINAL_HEIGHT - 1)]):
-                threshold = 100
+                threshold = 200
                 print('on the side')
                 if x_delta * y_delta < threshold:
                     continue
