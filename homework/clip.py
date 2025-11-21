@@ -94,15 +94,6 @@ class CaptionDatasetForTraining(Dataset):
             "labels": input_ids,  # placeholder to fit the collator
         }
 
-# we trained a model to answer questions about the image
-# clip model is trained on captions
-# clip is trying to retreive information, e.g. retrieve all images that have this particular track (by virtue of the caption)
-# try and generate captions for similar images
-# have embedding of caption and image; a cluster
-# contrastive loss
-
-
-
 class CLIP(nn.Module):
     def __init__(
         self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 64, temperature: float = 0.07
@@ -126,7 +117,6 @@ class CLIP(nn.Module):
         )
 
         self.logit_scale = torch.nn.Parameter(torch.log(torch.tensor(1/self.temperature)))
-        # raise NotImplementedError("Not implemented")
 
     def encode_image(self, image: torch.Tensor) -> torch.Tensor:
         return self.vision_encoder(image)
@@ -267,7 +257,7 @@ def train(
     num_train_epochs: float = 3.,  # for debugging purpose, increase this once the dry run works
     per_device_train_batch_size: int = 1024,
     gradient_accumulation_steps: int = 1,
-    learning_rate: float = 5e-4,
+    learning_rate: float = 1e-3,
     num_workers: int = 2,
 ):
     vlm = BaseVLM()
