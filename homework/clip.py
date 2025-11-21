@@ -267,9 +267,10 @@ def compute_clip_loss(
 
     # diagonal is the ground truth
     diagonal = scaled.diagonal()
+    ground_truth_labels = torch.arange(0, len(diagonal), device=device)
 
-    text_to_img_loss = loss_fn(scaled.T, torch.arange(0, len(diagonal)))
-    img_to_text_loss = loss_fn(scaled, torch.arange(0, len(diagonal)))
+    text_to_img_loss = loss_fn(scaled.T, ground_truth_labels)
+    img_to_text_loss = loss_fn(scaled, ground_truth_labels)
 
     #return img_to_text_loss
     return (text_to_img_loss + img_to_text_loss).mean()
