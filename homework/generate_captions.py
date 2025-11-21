@@ -95,7 +95,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
 def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False,
                   select_images=False,
-                  total=0):
+                  total=200):
     """
     Check QA pairs for a specific info file and view index.
 
