@@ -210,24 +210,10 @@ class CLIP(nn.Module):
         vresult = self.vision_net.forward(pooled)
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden
-        #maxxed = text_enc.max(dim=-1).values[0]
-        print(text_enc)
         maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
-        print(text_enc.shape)
-        print(maxxed.shape)
-
         tresult = self.text_net.forward(maxxed)
 
-        print(vresult.shape)
-        print(tresult.shape)
-
         return vresult, tresult, self.logit_scale
-
-        #pixel_values -> torch.Size([1024, 3, 192, 192])
-        #input_ids -> torch.Size([1024, 17])
-        # attention_mask -> torch.Size([1024, 17])
-        #labels -> None (nothing here)
-        #text_encoded = self.encode_text()
 
 
 def compute_clip_loss(
@@ -247,32 +233,19 @@ def compute_clip_loss(
         The loss for the CLIP model.
     """
     device = outputs[0].device
-    print('loss')
-    print(labels.shape)
-    print(outputs[0].shape)
-    print(outputs[1].shape)
-    print(outputs[2].shape)
     sim_matrix = (outputs[0] @ outputs[1].T).to(device)
-
     scaled = (torch.exp(outputs[2]) * sim_matrix).to(device)
-
-
-    print(sim_matrix)
-    print(scaled)
-    print(labels)
-
-    print(sim_matrix.shape)
-
     loss_fn = torch.nn.CrossEntropyLoss()
 
     # diagonal is the ground truth
     diagonal = scaled.diagonal()
     ground_truth_labels = torch.arange(0, len(diagonal), device=device)
 
+    print(scaled[0].sum())
+
     text_to_img_loss = loss_fn(scaled.T, ground_truth_labels)
     img_to_text_loss = loss_fn(scaled, ground_truth_labels)
 
-    #return img_to_text_loss
     return (text_to_img_loss + img_to_text_loss).mean()
 
 
