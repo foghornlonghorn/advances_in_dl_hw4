@@ -249,7 +249,7 @@ def compute_clip_loss(
     print(labels.shape)
 
     sim_matrix = outputs[0] @ outputs[1].T
-    scaled = torch.exp(outputs[2]) * sim_matrix
+    scaled = torch.exp(outputs[2] * sim_matrix)
 
     print(sim_matrix)
     print(scaled)
