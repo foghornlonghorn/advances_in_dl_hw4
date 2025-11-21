@@ -113,7 +113,7 @@ class CLIP(nn.Module):
         self.proj_dim = proj_dim
         self.temperature = temperature
 
-        self.pool = torch.nn.MaxPool1d(768)
+        self.pool = torch.nn.AvgPool1d(768)
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
             torch.nn.Linear(144, self.proj_dim),
