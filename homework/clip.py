@@ -198,12 +198,16 @@ class CLIP(nn.Module):
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         pooled = self.pool(venc)
         vresult = self.vision_net.forward(pooled)
+        vresult_normed = torch.nn.functional.normalize(vresult, dim=-1)
+        print(vresult.shape)
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden
         maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
         tresult = self.text_net.forward(maxxed)
+        tresult_normed = torch.nn.functional.normalize(tresult, dim=-1)
+        print(tresult.shape)
 
-        return vresult, tresult, self.logit_scale
+        return vresult_normed, tresult_normed, self.logit_scale
 
 
 def compute_clip_loss(
