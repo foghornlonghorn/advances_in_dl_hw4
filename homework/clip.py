@@ -264,17 +264,18 @@ def compute_clip_loss(
 
     diagonal = scaled.diagonal()
     print(diagonal.shape)
-    text_to_img = diagonal.T[torch.arange(0, labels.shape[1])]
+    #text_to_img = diagonal.T[torch.arange(0, labels.shape[1])]
     img_to_text = diagonal[torch.arange(0, labels.shape[1])]
-    print(text_to_img.shape)
+    #print(text_to_img.shape)
     print(img_to_text.shape)
 
     labels_float = labels.float()
 
-    text_to_img_loss = loss_fn(labels_float, text_to_img)
+    #text_to_img_loss = loss_fn(labels_float, text_to_img)
     img_to_text_loss = loss_fn(labels_float, img_to_text)
 
-    return (text_to_img_loss + img_to_text_loss).mean()
+    return img_to_text_loss
+    #return (text_to_img_loss + img_to_text_loss).mean()
 
 
 def get_target_modules_for_lora(model: nn.Module) -> list[str]:
