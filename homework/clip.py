@@ -112,7 +112,7 @@ class CLIP(nn.Module):
         )
 
         self.text_net = torch.nn.Sequential(
-            torch.nn.Linear(16, self.proj_dim),
+            torch.nn.Linear(576, self.proj_dim),
             #torch.nn.LayerNorm(self.proj_dim),
         )
 
@@ -209,7 +209,8 @@ class CLIP(nn.Module):
         #print(text_enc.shape)
         #maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
         first_tokened = text_enc[:,:,0]
-        tresult = self.text_net.forward(first_tokened)
+        maxxed = text_enc.max(dim=1).values
+        tresult = self.text_net.forward(maxxed)
         tresult_normed = torch.nn.functional.normalize(tresult, dim=-1)
         #print(tresult.shape)
 
