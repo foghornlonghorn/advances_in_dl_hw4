@@ -197,6 +197,7 @@ class CLIP(nn.Module):
 
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         pooled = self.pool(venc)
+        print(venc.shape)
         vresult = self.vision_net.forward(venc)
         vresult_normed = torch.nn.functional.normalize(vresult, dim=-1)
         print(vresult.shape)
