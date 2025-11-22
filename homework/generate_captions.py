@@ -32,13 +32,14 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
             ego_kart_ctr = kart['center']
 
     # 1. Ego car
-    captions.append({'image_file': str(image_file),
-                    'caption': '{kart_name} is the ego car.'.format(kart_name=ego_kart)})
+    if len(kart_objects) > 0:
+        captions.append({'image_file': str(image_file),
+                         'caption': '{kart_name} is the ego car.'.format(kart_name=ego_kart)})
 
-    # 2. Counting
-    num_karts = str(len(kart_objects))
-    captions.append({'image_file': str(image_file),
-                     'caption': f'There are {num_karts} karts in the scenario.'})
+        # 2. Counting
+        num_karts = str(len(kart_objects))
+        captions.append({'image_file': str(image_file),
+                         'caption': f'There are {num_karts} karts in the scenario.'})
 
     # 3. Track name
     track_name = extract_track_info(info_path)
