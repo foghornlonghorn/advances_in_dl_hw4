@@ -107,7 +107,7 @@ class CLIP(nn.Module):
         self.pool = torch.nn.AvgPool1d(768)
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
-            torch.nn.Linear(767, self.proj_dim),
+            torch.nn.Linear(768, self.proj_dim),
             #torch.nn.LayerNorm(self.proj_dim),
         )
 
@@ -199,7 +199,7 @@ class CLIP(nn.Module):
         #pooled = self.pool(venc)
         print(venc.shape)
         print(venc)
-        remove_cls_token = venc[:,:,:-1]
+        remove_cls_token = venc[:,0,:]
         vresult = self.vision_net.forward(remove_cls_token)
         vresult_normed = torch.nn.functional.normalize(vresult, dim=-1)
         print(vresult.shape)
