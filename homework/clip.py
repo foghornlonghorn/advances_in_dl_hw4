@@ -307,8 +307,8 @@ def train(
 
     # load dataset
     train_dataset = CaptionDataset("train", data_dir)
-    import random
-    random.shuffle(train_dataset.captions)
+    #import random
+    #random.shuffle(train_dataset.captions)
     train_dataset = CaptionDatasetForTraining(train_dataset, processor)
 
     training_args = TrainingArguments(
