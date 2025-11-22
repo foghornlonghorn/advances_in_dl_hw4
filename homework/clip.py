@@ -108,12 +108,12 @@ class CLIP(nn.Module):
         self.vision_net = torch.nn.Sequential(
             torch.nn.Flatten(),
             torch.nn.Linear(144, self.proj_dim),
-            torch.nn.LayerNorm(self.proj_dim),
+            #torch.nn.LayerNorm(self.proj_dim),
         )
 
         self.text_net = torch.nn.Sequential(
             torch.nn.Linear(1, self.proj_dim),
-            torch.nn.LayerNorm(self.proj_dim),
+            #torch.nn.LayerNorm(self.proj_dim),
         )
 
         self.logit_scale = torch.nn.Parameter(torch.log(torch.tensor(1/self.temperature)))
@@ -197,7 +197,7 @@ class CLIP(nn.Module):
 
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
         pooled = self.pool(venc)
-        vresult = self.vision_net.forward(pooled)
+        vresult = self.vision_net.forward(venc)
         vresult_normed = torch.nn.functional.normalize(vresult, dim=-1)
         print(vresult.shape)
 
