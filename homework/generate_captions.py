@@ -104,6 +104,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
         info_file: Path to the info.json file
         view_index: Index of the view to analyze
     """
+    print(f'total: {total}')
     # Find corresponding image file
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
