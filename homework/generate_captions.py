@@ -111,8 +111,8 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
     info_files = source_dir.glob("*_info.json")
     count = 0
     for info_file in info_files:
-        if total != 0 and count > total:
-            return
+        # if total != 0 and count > total:
+        #     return
         count += 1
         base_name = info_file.stem.replace("_info", "")
         image_files = list(info_file.parent.glob(f"{base_name}_*_im.jpg"))
