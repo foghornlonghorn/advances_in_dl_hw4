@@ -169,7 +169,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
 
             kart_area = x_delta * y_delta
 
-            kart_size_threshold = 25
+            kart_size_threshold = 350
             if x_delta * y_delta <= kart_size_threshold:
                 print(f'{kart_name} too small')
                 continue
