@@ -108,25 +108,26 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
     # Find corresponding image file
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
-    info_files = source_dir.glob("*_info.json")
-    count = 0
+    info_files = source_dir.glob("*info.json")
+    #count = 0
     for info_file in info_files:
         # if total != 0 and count > total:
         #     return
-        count += 1
+        #count += 1
+        print(f'info_file: {info_file}')
         base_name = info_file.stem.replace("_info", "")
-        image_files = list(info_file.parent.glob(f"{base_name}_*_im.jpg"))
+        image_files = list(info_file.parent.glob(f"{base_name}*im.jpg"))
 
         for image_file in image_files:
+            print(f'image_file: {image_file}')
             frame_id, view_index = extract_frame_info(image_file)
-            captions_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_captions.json"))
+
 
             # Generate QA pairs
             captions = generate_captions(info_file, image_file, int(view_index))
 
             # Display the image
             if display_images:
-                print(captions_file)
                 print(captions)
 
                 # Visualize detections
@@ -138,8 +139,12 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
                 plt.title(f"Frame {extract_frame_info(str(image_file))[0]}, View {view_index}")
                 plt.show()
 
-            with open(captions_file, 'w') as qaf:
-                json.dump(captions, qaf)
+            count = 0
+            for caption in captions:
+                captions_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_{count:02d}_captions.json"))
+                with open(captions_file, 'w') as qaf:
+                    json.dump(caption, qaf)
+                count +=1
 
             # create yes or no prompt to branch adding specific file
             if not select_images:
