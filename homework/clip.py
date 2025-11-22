@@ -208,9 +208,9 @@ class CLIP(nn.Module):
         #print(text_enc)
         #print(text_enc.shape)
         #maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
-        first_tokened = text_enc[:,:,0]
+        first_tokened = text_enc[:,0,:]
         maxxed = text_enc.max(dim=1).values
-        tresult = self.text_net.forward(maxxed)
+        tresult = self.text_net.forward(first_tokened)
         tresult_normed = torch.nn.functional.normalize(tresult, dim=-1)
         #print(tresult.shape)
 
