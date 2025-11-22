@@ -39,7 +39,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
         # 2. Counting
         num_karts = str(len(kart_objects))
         captions.append({'image_file': str(image_file),
-                         'caption': f'There are {num_karts} karts in the scenario.'})
+                         'caption': f'There are {num_karts} karts in the scene.'})
 
     # 3. Track name
     track_name = extract_track_info(info_path)
