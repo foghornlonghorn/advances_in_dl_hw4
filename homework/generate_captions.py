@@ -143,7 +143,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             for caption in captions:
                 captions_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_{count:02d}_captions.json"))
                 with open(captions_file, 'w') as qaf:
-                    json.dump(caption, qaf)
+                    json.dump([caption], qaf)
                 count +=1
 
             # create yes or no prompt to branch adding specific file
