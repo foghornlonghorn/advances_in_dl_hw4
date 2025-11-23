@@ -134,7 +134,7 @@ def draw_detections(
     return np.array(pil_image)
 
 
-def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_height: int = 100, view_index = None) -> list:
+def _get_relative_kartt_data(info_path: str = None, img_width: int = 150, img_height: int = 100, view_index = None) -> list:
     """
 
     """
@@ -156,7 +156,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                 continue
 
             # if area of detection is < a certain size disregard it?
-            # if part of the cart is off screen maybe remove it
+            # if part of the kartt is off screen maybe remove it
             # maybe this will perform better
             #
             instance_id = detection[1]
@@ -177,7 +177,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             x2_scaled = int(x2 * scale_x)
             y2_scaled = int(y2 * scale_y)
 
-            min_box_size = 10
+            min_box_size = 5
 
             # Skip if bounding box is too small
             if (x2_scaled - x1_scaled) < min_box_size or (y2_scaled - y1_scaled) < min_box_size:
@@ -215,7 +215,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                               (abs(detection[3] - detection[5]) / 2 + detection[3]) * scale_y]
             print(f'{kart_name} center {kart["center"]}')
 
-        # find cart centers and ego cart
+        # find kartt centers and ego kartt
 
         karts = karts.values()
         karts = sorted(karts, key=lambda k: k['area'])
@@ -274,7 +274,7 @@ def extract_kart_objects(
         ctr = [img_width / 2, img_height / 2]
         karts = data['karts']
 
-        return _get_relative_cart_data(info_path, img_width, img_height, view_index)
+        return _get_relative_kartt_data(info_path, img_width, img_height, view_index)
 
 def extract_track_info(info_path: str) -> str:
     """
@@ -317,11 +317,13 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     #distances_down_track = {karts[i]: v, for i, v in enumerate(data['distance_down_track'])}
     kart_objects = extract_kart_objects(info_path, view_index, img_width, img_height)
 
-    # 1. Ego car question
-    q = 'What kart is the ego car?'
+    # 1. Ego kart question
+    q = 'What kart is the ego kart?'
 
     ego_kart = None
     ego_kart_ctr = None
+
+    # if no kartts just provide locations
 
     for kart in kart_objects:
         if kart['is_center_kart']:
@@ -343,12 +345,13 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     qa_pairs.append(qa_pair_factory(**{'question': 'What track is this?',
                         'answer': extract_track_info(info_path)}))
 
+    # Make sure to omit questions with 0 karts
     for kart in kart_objects:
 
         # 4. Relative position questions for each kart
-        q1 = 'Is {kart_name} to the left or right of the ego car?'
-        q2 = 'Is {kart_name} in front of or behind the ego car?'
-        q3 = 'Where is {kart_name} relative to the ego car?'
+        q1 = 'Is {kart_name} to the left or right of the ego kart?'
+        q2 = 'Is {kart_name} in front of or behind the ego kart?'
+        q3 = 'Where is {kart_name} relative to the ego kart?'
 
         kart_name = kart['kart_name']
 
@@ -357,43 +360,44 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
 
         x, y = kart['center']
         relative_pos = ''
-        left_cars = 0
-        right_cars = 0
-        front_cars = 0
-        behind_cars = 0
+        left_karts = 0
+        right_karts = 0
+        front_karts = 0
+        behind_karts = 0
         if x < ego_kart_ctr[0]:
             qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
                               'answer': 'left'}))
             relative_pos += 'left and '
-            left_cars += 1
+            left_karts += 1
         else:
             qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
                               'answer': 'right'}))
             relative_pos += 'right and '
-            right_cars += 1
+            right_karts += 1
+        # maybe use 'back' instead of 'behind'?
         if y > ego_kart_ctr[1]:
             qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
                               'answer': 'behind'}))
             relative_pos += 'behind'
-            behind_cars += 1
+            behind_karts += 1
         else:
             qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
                               'answer': 'front'}))
             relative_pos += 'front'
-            front_cars += 1
+            front_karts += 1
 
         qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
                               'answer': relative_pos}))
 
         # 5. Counting questions
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego car?',
-                                           'answer': str(left_cars)}))
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the right of the ego car?',
-                                           'answer': str(right_cars)}))
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are in front of the ego car?',
-                                           'answer': str(front_cars)}))
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are behind the ego car?',
-                                           'answer': str(behind_cars)}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego kart?',
+                                           'answer': str(left_karts)}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the right of the ego kart?',
+                                           'answer': str(right_karts)}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are in front of the ego kart?',
+                                           'answer': str(front_karts)}))
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are behind the ego kart?',
+                                           'answer': str(behind_karts)}))
 
     return qa_pairs
 

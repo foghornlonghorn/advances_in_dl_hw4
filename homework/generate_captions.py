@@ -31,10 +31,10 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
             ego_kart = kart['kart_name']
             ego_kart_ctr = kart['center']
 
-    # 1. Ego car
+    # 1. Ego kart
     if len(kart_objects) > 0:
         captions.append({'image_file': str(image_file),
-                         'caption': '{kart_name} is the ego car.'.format(kart_name=ego_kart)})
+                         'caption': '{kart_name} is the ego kart.'.format(kart_name=ego_kart)})
 
         # 2. Counting
         num_karts = str(len(kart_objects))
@@ -48,7 +48,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
     # 4. Relative position
 
-    caption = '{kart_name} is {position} of the ego car.'
+    caption = '{kart_name} is {position} of the ego kart.'
 
     for kart in kart_objects:
         kart_name = kart['kart_name']
@@ -58,35 +58,35 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
         x, y = kart['center']
         relative_pos = ''
-        left_cars = 0
-        right_cars = 0
-        front_cars = 0
-        behind_cars = 0
+        left_karts = 0
+        right_karts = 0
+        front_karts = 0
+        behind_karts = 0
         if x < ego_kart_ctr[0]:
             captions.append({'image_file': str(image_file),
                              'caption': caption.format(kart_name=kart_name,
                                                        position='left')})
             relative_pos += 'left and '
-            left_cars += 1
+            left_karts += 1
         else:
             captions.append({'image_file': str(image_file),
                              'caption': caption.format(kart_name=kart_name,
                                                        position='right')})
             relative_pos += 'right and '
-            right_cars += 1
+            right_karts += 1
         if y > ego_kart_ctr[1]:
             captions.append({'image_file': str(image_file),
                             'caption': caption.format(kart_name=kart_name,
                                                       position='behind')})
             relative_pos += 'behind'
-            behind_cars += 1
+            behind_karts += 1
         else:
             captions.append({'image_file': str(image_file),
                              'caption': caption.format(kart_name=kart_name,
                                                        position='in front')})
 
             relative_pos += 'in front'
-            front_cars += 1
+            front_karts += 1
 
         # captions.append({'image_file': str(image_file),
         #                 'caption': caption.format(kart_name=kart_name,
@@ -128,7 +128,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
 
             # Display the image
             if display_images:
-                print(captions)
+                print(', '.join([c['caption'] for c in captions]))
 
                 # Visualize detections
                 annotated_image = draw_detections(str(image_file), info_file)
