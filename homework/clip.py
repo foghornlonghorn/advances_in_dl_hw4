@@ -96,7 +96,7 @@ class CaptionDatasetForTraining(Dataset):
 
 class CLIP(nn.Module):
     def __init__(
-        self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 128, temperature: float = 0.07
+        self, vision_encoder: nn.Module, text_encoder: nn.Module, proj_dim: int = 64, temperature: float = 0.07
     ):
         super().__init__()
         self.vision_encoder = vision_encoder
@@ -290,7 +290,7 @@ def train(
         task_type=TaskType.FEATURE_EXTRACTION,
         inference_mode=False,
         r=8,
-        lora_alpha=32,
+        lora_alpha=32, # usually 4 - 5 x
         lora_dropout=0.0,
         # target_modules="all-linear",
         target_modules=get_target_modules_for_lora(model),
