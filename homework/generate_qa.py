@@ -177,7 +177,7 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             x2_scaled = int(x2 * scale_x)
             y2_scaled = int(y2 * scale_y)
 
-            min_box_size = 5
+            min_box_size = 10
 
             # Skip if bounding box is too small
             if (x2_scaled - x1_scaled) < min_box_size or (y2_scaled - y1_scaled) < min_box_size:
