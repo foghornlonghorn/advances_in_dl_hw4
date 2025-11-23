@@ -110,11 +110,10 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
     info_files = source_dir.glob("*info.json")
-    count = 0
+    cap_count = 0
     for info_file in info_files:
-        if count > total:
+        if cap_count > total:
             return
-        count += 1
         print(f'info_file: {info_file}')
         base_name = info_file.stem.replace("_info", "")
         image_files = list(info_file.parent.glob(f"{base_name}*im.jpg"))
@@ -146,6 +145,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
                 with open(captions_file, 'w') as qaf:
                     json.dump([caption], qaf)
                 count +=1
+                cap_count +=1
 
             # create yes or no prompt to branch adding specific file
             if not select_images:
