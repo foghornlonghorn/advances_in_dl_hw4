@@ -34,7 +34,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
     # 1. Ego kart
     if len(kart_objects) > 0:
         captions.append({'image_file': str(image_file),
-                         'caption': '{kart_name} is the ego kart.'.format(kart_name=ego_kart)})
+                         'caption': '{kart_name} is the ego car.'.format(kart_name=ego_kart)})
 
         # 2. Counting
         num_karts = str(len(kart_objects))
