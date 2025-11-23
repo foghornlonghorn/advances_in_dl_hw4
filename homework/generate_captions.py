@@ -112,13 +112,13 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
     info_files = source_dir.glob("*info.json")
     cap_count = 0
     for info_file in info_files:
-        if cap_count > total:
-            return
         print(f'info_file: {info_file}')
         base_name = info_file.stem.replace("_info", "")
         image_files = list(info_file.parent.glob(f"{base_name}*im.jpg"))
 
         for image_file in image_files:
+            if cap_count > total:
+                return
             print(f'image_file: {image_file}')
             frame_id, view_index = extract_frame_info(image_file)
 
