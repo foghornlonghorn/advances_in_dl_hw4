@@ -140,16 +140,14 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
     """
     with open(info_path) as ipf:
         data = json.load(ipf)
-        width_factor = img_width / ORIGINAL_WIDTH
-        height_factor = img_height / ORIGINAL_HEIGHT
+        scale_x = img_width / ORIGINAL_WIDTH
+        scale_y = img_height / ORIGINAL_HEIGHT
         expected_ego_kart_ctr = [img_width * .5, img_height * (2/3)]
         karts = {}
 
         #     class_id, track_id, x1, y1, x2, y2 = detection
         # class_id: object type
         # track_id: object in seq of detected objects
-        kart_ctrs = {}
-        kart_detections = {}
         for i, detection in enumerate(data['detections'][view_index]):
             try:
                 if OBJECT_TYPES[detection[0]] != OBJECT_TYPES[1]:
@@ -164,15 +162,34 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
             instance_id = detection[1]
             kart_name = data['karts'][instance_id]
 
+            x1 = detection[2]
+            x2 = detection[4]
+            y1 = detection[3]
+            y2 = detection[5]
+
             x_delta = abs(detection[2] - detection[4])
             y_delta = abs(detection[3] - detection[5])
 
             kart_area = x_delta * y_delta
 
-            kart_size_threshold = 350
-            if x_delta * y_delta <= kart_size_threshold:
-                print(f'{kart_name} too small')
+            x1_scaled = int(x1 * scale_x)
+            y1_scaled = int(y1 * scale_y)
+            x2_scaled = int(x2 * scale_x)
+            y2_scaled = int(y2 * scale_y)
+
+            min_box_size = 5
+
+            # Skip if bounding box is too small
+            if (x2_scaled - x1_scaled) < min_box_size or (y2_scaled - y1_scaled) < min_box_size:
                 continue
+
+            if x2_scaled < 0 or x1_scaled > img_width or y2_scaled < 0 or y1_scaled > img_height:
+                continue
+
+            # kart_size_threshold = 350
+            # if x_delta * y_delta <= kart_size_threshold:
+            #     print(f'{kart_name} too small')
+            #     continue
 
             # # skip karts far on the side
             # if any([detection[2] == 0, detection[3] == 0, detection[4] ==  (ORIGINAL_WIDTH - 1), detection[5] == (ORIGINAL_HEIGHT - 1)]):
@@ -194,13 +211,11 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                 kart = karts[kart_name]
 
 
-
-            kart['center'] = [(abs(detection[2] - detection[4]) / 2 + detection[2]) * width_factor,
-                              (abs(detection[3] - detection[5]) / 2 + detection[3]) * height_factor]
+            kart['center'] = [(abs(detection[2] - detection[4]) / 2 + detection[2]) * scale_x,
+                              (abs(detection[3] - detection[5]) / 2 + detection[3]) * scale_y]
             print(f'{kart_name} center {kart["center"]}')
 
         # find cart centers and ego cart
-        delta_min = inf
 
         karts = karts.values()
         karts = sorted(karts, key=lambda k: k['area'])
