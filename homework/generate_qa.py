@@ -238,7 +238,10 @@ def _get_relative_cart_data(info_path: str = None, img_width: int = 150, img_hei
                 ctr_kart_assigned = True
 
         if not ctr_kart_assigned:
-            karts[-1]['is_center_kart'] = True
+            try:
+                karts[-1]['is_center_kart'] = True
+            except IndexError as e:
+                return karts
 
         print(karts)
         return karts
