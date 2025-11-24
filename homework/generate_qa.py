@@ -463,7 +463,6 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
 
         for image_file in image_files:
             frame_id, view_index = extract_frame_info(image_file)
-            qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pairs.json"))
 
             # Generate QA pairs
             qa_pairs = generate_qa_pairs(info_file,
@@ -472,7 +471,11 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
                                          150,
                                          100,
                                          verbose)
-            if len(qa_pairs) == 0:
+            try:
+                if len(qa_pairs) == 0:
+                    continue
+
+            except TypeError as e:
                 continue
             # Display the image
             if display_images:
@@ -487,8 +490,13 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
                 plt.title(f"Frame {extract_frame_info(str(image_file))[0]}, View {view_index}")
                 plt.show()
 
-            with open(qa_file, 'w') as qaf:
-                json.dump(qa_pairs, qaf)
+            count = 0
+            for qa in qa_pairs:
+                qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_{count:02d}_qa_pairs.json"))
+                with open(qa_file, 'w') as qaf:
+                    json.dump([qa], qaf)
+                count += 1
+
 
             # create yes or no prompt to branch adding specific file
             if not select_images:
