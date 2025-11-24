@@ -196,24 +196,20 @@ class CLIP(nn.Module):
         """
 
         venc = self.vision_encoder(pixel_values=pixel_values).last_hidden_state # TODO get last hidden state
-        #pooled = self.pool(venc)
-        #print(venc.shape)
-        #print(venc)
+        print(venc.shape)
         average_tokens = venc.mean(dim=1)
+        print(average_tokens.shape)
         vresult = self.vision_net.forward(average_tokens)
         vresult_normed = torch.nn.functional.normalize(vresult, dim=-1)
-        #print(vresult.shape)
 
         text_enc = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state # TODO get last hidden
-        #print(text_enc)
-        #print(text_enc.shape)
-        #maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
-        #first_tokened = text_enc[:,-1,:] # <- argmax will give token with highest
+        print(text_enc.shape)
         max_token = text_enc.argmax(dim=1)
+        print(max_token.shape)
 
         tresult = self.text_net.forward(max_token)
         tresult_normed = torch.nn.functional.normalize(tresult, dim=-1)
-        #print(tresult.shape)
+
 
         return vresult_normed, tresult_normed, self.logit_scale
 

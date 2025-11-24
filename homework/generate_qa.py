@@ -328,8 +328,9 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     qa_pairs = []
     with open(info_path) as ipf:
         data = json.load(ipf)
+    # remove the leading directory
+    image_file = Path(*image_file.parts[1:])
 
-    karts = data['karts']
     #distances_down_track = {karts[i]: v, for i, v in enumerate(data['distance_down_track'])}
     kart_objects = extract_kart_objects(info_path,
                                         view_index,
@@ -337,7 +338,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
                                         img_height,
                                         5,
                                         verbose)
-
+    qa_pair_factory = partial(_qa_pair_factory, image_path=str(image_file))
     # 3. Track information questions
     qa_pairs.append(qa_pair_factory(**{'question': 'What track is this?',
                         'answer': extract_track_info(info_path)}))
@@ -357,10 +358,6 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         if kart['is_center_kart']:
             ego_kart = kart['kart_name']
             ego_kart_ctr = kart['center']
-
-    # remove the leading directory
-    image_file = Path(*image_file.parts[1:])
-    qa_pair_factory = partial(_qa_pair_factory, image_path=str(image_file))
 
     qa_pairs.append(qa_pair_factory(**{'question': q,
                      'answer': ego_kart}))
@@ -469,7 +466,12 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pairs.json"))
 
             # Generate QA pairs
-            qa_pairs = generate_qa_pairs(info_file, image_file, int(view_index), verbose)
+            qa_pairs = generate_qa_pairs(info_file,
+                                         image_file,
+                                         int(view_index),
+                                         150,
+                                         100,
+                                         verbose)
 
             # Display the image
             if display_images:
