@@ -472,7 +472,8 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
                                          150,
                                          100,
                                          verbose)
-
+            if len(qa_pairs) == 0:
+                continue
             # Display the image
             if display_images:
                 print(qa_file)
