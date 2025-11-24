@@ -347,7 +347,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         return
 
     # 1. Ego kart question
-    q = 'What kart is the ego kart?'
+    q = 'What kart is the ego car?'
 
     ego_kart = None
     ego_kart_ctr = None
@@ -373,7 +373,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         # 4. Relative position questions for each kart
         q1 = 'Is {kart_name} to the left or right of the ego kart?'
         q2 = 'Is {kart_name} in front of or behind the ego kart?'
-        q3 = 'Where is {kart_name} relative to the ego kart?'
+        q3 = 'Where is {kart_name} relative to the ego car?'
 
         kart_name = kart['kart_name']
 
@@ -412,13 +412,13 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
                               'answer': relative_pos}))
 
         # 5. Counting questions
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego kart?',
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the left of the ego car?',
                                            'answer': str(left_karts)}))
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the right of the ego kart?',
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are to the right of the ego car?',
                                            'answer': str(right_karts)}))
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are in front of the ego kart?',
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are in front of the ego car?',
                                            'answer': str(front_karts)}))
-        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are behind the ego kart?',
+        qa_pairs.append(qa_pair_factory(**{'question': 'How many karts are behind the ego car?',
                                            'answer': str(behind_karts)}))
 
     return qa_pairs
@@ -479,7 +479,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
                 continue
             # Display the image
             if display_images:
-                print(qa_file)
+                #print(qa_file)
                 print(qa_pairs)
                 # Visualize detections
                 annotated_image = draw_detections(str(image_file), info_file)
