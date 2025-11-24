@@ -134,7 +134,11 @@ def draw_detections(
     return np.array(pil_image)
 
 
-def _get_relative_kartt_data(info_path: str = None, img_width: int = 150, img_height: int = 100, view_index = None) -> list:
+def _get_relative_kart_data(info_path: str = None,
+                            img_width: int = 150,
+                            img_height: int = 100,
+                            view_index = None,
+                            verbose=False) -> list:
     """
 
     """
@@ -156,7 +160,7 @@ def _get_relative_kartt_data(info_path: str = None, img_width: int = 150, img_he
                 continue
 
             # if area of detection is < a certain size disregard it?
-            # if part of the kartt is off screen maybe remove it
+            # if part of the kart is off screen maybe remove it
             # maybe this will perform better
             #
             instance_id = detection[1]
@@ -213,9 +217,10 @@ def _get_relative_kartt_data(info_path: str = None, img_width: int = 150, img_he
 
             kart['center'] = [(abs(detection[2] - detection[4]) / 2 + detection[2]) * scale_x,
                               (abs(detection[3] - detection[5]) / 2 + detection[3]) * scale_y]
-            print(f'{kart_name} center {kart["center"]}')
+            if verbose:
+                print(f'{kart_name} center {kart["center"]}')
 
-        # find kartt centers and ego kartt
+        # find kart centers and ego kart
 
         karts = karts.values()
         karts = sorted(karts, key=lambda k: k['area'])
@@ -243,11 +248,17 @@ def _get_relative_kartt_data(info_path: str = None, img_width: int = 150, img_he
             except IndexError as e:
                 return karts
 
-        print(karts)
+        if verbose:
+            print(karts)
         return karts
 
 def extract_kart_objects(
-    info_path: str, view_index: int, img_width: int = 150, img_height: int = 100, min_box_size: int = 5
+        info_path: str,
+        view_index: int,
+        img_width: int = 150,
+        img_height: int = 100,
+        min_box_size: int = 5,
+        verbose=False
 ) -> list:
     """
     Extract kart objects from the info.json file, including their center points and identify the center kart.
@@ -274,7 +285,11 @@ def extract_kart_objects(
         ctr = [img_width / 2, img_height / 2]
         karts = data['karts']
 
-        return _get_relative_kartt_data(info_path, img_width, img_height, view_index)
+        return _get_relative_kart_data(info_path,
+                                       img_width,
+                                       img_height,
+                                       view_index,
+                                       verbose)
 
 def extract_track_info(info_path: str) -> str:
     """
@@ -296,7 +311,8 @@ def _qa_pair_factory(image_path: str = None, question: str = None, answer: str =
         'answer': answer
     }
 
-def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_width: int = 150, img_height: int = 100) -> list:
+def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_width: int = 150, img_height: int = 100,
+                      verbose=False) -> list:
     """
     Generate question-answer pairs for a given view.
 
@@ -315,7 +331,19 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
 
     karts = data['karts']
     #distances_down_track = {karts[i]: v, for i, v in enumerate(data['distance_down_track'])}
-    kart_objects = extract_kart_objects(info_path, view_index, img_width, img_height)
+    kart_objects = extract_kart_objects(info_path,
+                                        view_index,
+                                        img_width,
+                                        img_height,
+                                        5,
+                                        verbose)
+
+    # 3. Track information questions
+    qa_pairs.append(qa_pair_factory(**{'question': 'What track is this?',
+                        'answer': extract_track_info(info_path)}))
+
+    if len(kart_objects) == 0:
+        return
 
     # 1. Ego kart question
     q = 'What kart is the ego kart?'
@@ -323,7 +351,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     ego_kart = None
     ego_kart_ctr = None
 
-    # if no kartts just provide locations
+    # if no karts just provide locations
 
     for kart in kart_objects:
         if kart['is_center_kart']:
@@ -341,9 +369,6 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     # 2. Total karts question
     qa_pairs.append(qa_pair_factory(**{'question': q,
                                        'answer': str(len(kart_objects))}))
-    # 3. Track information questions
-    qa_pairs.append(qa_pair_factory(**{'question': 'What track is this?',
-                        'answer': extract_track_info(info_path)}))
 
     # Make sure to omit questions with 0 karts
     for kart in kart_objects:
@@ -422,7 +447,7 @@ def handle_special_file(dest_dir: str = 'data/special_files',
             print(f'Copied {file_path} to {dest_file_path}')
 
 def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False,
-                  select_images=False):
+                  select_images=False, verbose=False):
     """
     Check QA pairs for a specific info file and view index.
 
@@ -444,7 +469,7 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
             qa_file = dest_dir.joinpath(Path(f"{base_name}_{view_index:02d}_qa_pairs.json"))
 
             # Generate QA pairs
-            qa_pairs = generate_qa_pairs(info_file, image_file, int(view_index))
+            qa_pairs = generate_qa_pairs(info_file, image_file, int(view_index), verbose)
 
             # Display the image
             if display_images:

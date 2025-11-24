@@ -106,7 +106,7 @@ class CLIP(nn.Module):
 
         self.pool = torch.nn.AvgPool1d(768)
         self.vision_net = torch.nn.Sequential(
-            torch.nn.Flatten(),
+            #torch.nn.Flatten(),
             torch.nn.Linear(768, self.proj_dim),
             #torch.nn.LayerNorm(self.proj_dim),
         )
@@ -199,8 +199,8 @@ class CLIP(nn.Module):
         #pooled = self.pool(venc)
         #print(venc.shape)
         #print(venc)
-        remove_cls_token = venc[:,0,:]
-        vresult = self.vision_net.forward(remove_cls_token)
+        average_tokens = venc.mean(dim=1)
+        vresult = self.vision_net.forward(average_tokens)
         vresult_normed = torch.nn.functional.normalize(vresult, dim=-1)
         #print(vresult.shape)
 
@@ -208,9 +208,10 @@ class CLIP(nn.Module):
         #print(text_enc)
         #print(text_enc.shape)
         #maxxed = text_enc.max(dim=-1).values[:,0].unsqueeze(dim=1)
-        first_tokened = text_enc[:,0,:]
-        maxxed = text_enc.max(dim=1).values
-        tresult = self.text_net.forward(first_tokened)
+        #first_tokened = text_enc[:,-1,:] # <- argmax will give token with highest
+        max_token = text_enc.argmax(dim=1)
+
+        tresult = self.text_net.forward(max_token)
         tresult_normed = torch.nn.functional.normalize(tresult, dim=-1)
         #print(tresult.shape)
 

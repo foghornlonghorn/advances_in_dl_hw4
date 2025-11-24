@@ -12,7 +12,12 @@ from generate_qa import draw_detections, extract_frame_info, extract_kart_object
 from generate_qa import handle_special_file
 
 
-def generate_captions(info_path: str, image_file: str, view_index: int, img_width: int = 150, img_height: int = 100) -> list:
+def generate_captions(info_path: str,
+                      image_file: str,
+                      view_index: int,
+                      img_width: int = 150,
+                      img_height: int = 100,
+                      verbose=False) -> list:
     """
     Generate caption for a specific view.
     """
@@ -23,7 +28,13 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
     # karts = data['karts']
     #distances_down_track = {karts[i]: v, for i, v in enumerate(data['distance_down_track'])}
-    kart_objects = extract_kart_objects(info_path, view_index, img_width, img_height)
+    kart_objects = extract_kart_objects(
+        info_path,
+        view_index,
+        img_width,
+        img_height,
+        5,
+        verbose)
     image_file = Path(*image_file.parts[1:])
 
     for kart in kart_objects:
@@ -48,9 +59,8 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 
     # 4. Relative position
 
-    caption = '{kart_name} is {position} of the ego kart.'
-
     for kart in kart_objects:
+        caption = '{kart_name} is {position} of the ego kart.'
         kart_name = kart['kart_name']
 
         if kart['kart_name'] == ego_kart:
@@ -75,6 +85,7 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
             relative_pos += 'right and '
             right_karts += 1
         if y > ego_kart_ctr[1]:
+            caption = '{kart_name} is {position} the ego kart.'
             captions.append({'image_file': str(image_file),
                             'caption': caption.format(kart_name=kart_name,
                                                       position='behind')})
@@ -97,7 +108,8 @@ def generate_captions(info_path: str, image_file: str, view_index: int, img_widt
 def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', display_images=False,
                   select_images=False,
                   total=10000,
-                  shuffle=True):
+                  shuffle=True,
+                  verbose=False):
     """
     Check QA pairs for a specific info file and view index.
 
@@ -105,26 +117,33 @@ def generate_bulk(source_dir: str = 'data/valid', dest_dir: str = 'data/train', 
         info_file: Path to the info.json file
         view_index: Index of the view to analyze
     """
-    print(f'total: {total}')
+    #print(f'total: {total}')
     # Find corresponding image file
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
     info_files = source_dir.glob("*info.json")
     cap_count = 0
     for info_file in info_files:
-        print(f'info_file: {info_file}')
+        if verbose:
+            print(f'info_file: {info_file}')
         base_name = info_file.stem.replace("_info", "")
         image_files = list(info_file.parent.glob(f"{base_name}*im.jpg"))
 
         for image_file in image_files:
             if cap_count > total:
                 return
-            print(f'image_file: {image_file}')
+            if verbose:
+                print(f'image_file: {image_file}')
             frame_id, view_index = extract_frame_info(image_file)
 
 
             # Generate QA pairs
-            captions = generate_captions(info_file, image_file, int(view_index))
+            captions = generate_captions(info_file,
+                                         image_file,
+                                         int(view_index),
+                                         150,
+                                         100,
+                                         verbose)
 
             # Display the image
             if display_images:
