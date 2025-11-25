@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image, ImageDraw
 
+import operator
+
 from math import inf
 from functools import partial
 # Define object type mapping
@@ -217,6 +219,11 @@ def _get_relative_kart_data(info_path: str = None,
 
             kart['center'] = [(abs(detection[2] - detection[4]) / 2 + detection[2]) * scale_x,
                               (abs(detection[3] - detection[5]) / 2 + detection[3]) * scale_y]
+
+            kart['at_edge'] = False
+            if int(detection[5] * scale_y) >= 99:
+                kart['at_edge'] = True
+
             if verbose:
                 print(f'{kart_name} center {kart["center"]}')
 
@@ -353,11 +360,14 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     ego_kart_ctr = None
 
     # if no karts just provide locations
+    op = operator.gt
 
     for kart in kart_objects:
         if kart['is_center_kart']:
             ego_kart = kart['kart_name']
             ego_kart_ctr = kart['center']
+            if kart['at_edge']:
+                op = operator.lt
 
     qa_pairs.append(qa_pair_factory(**{'question': q,
                      'answer': ego_kart}))
@@ -366,6 +376,7 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
     # 2. Total karts question
     qa_pairs.append(qa_pair_factory(**{'question': q,
                                        'answer': str(len(kart_objects))}))
+
 
     # Make sure to omit questions with 0 karts
     for kart in kart_objects:
@@ -386,27 +397,31 @@ def generate_qa_pairs(info_path: str, image_file: str, view_index: str, img_widt
         right_karts = 0
         front_karts = 0
         behind_karts = 0
-        if x < ego_kart_ctr[0]:
-            qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
-                              'answer': 'left'}))
-            relative_pos += 'left and '
-            left_karts += 1
-        else:
-            qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
-                              'answer': 'right'}))
-            relative_pos += 'right and '
-            right_karts += 1
-        # maybe use 'back' instead of 'behind'?
-        if y > ego_kart_ctr[1]:
+
+
+        if op(y, ego_kart_ctr[1]):
             qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
-                              'answer': 'behind'}))
-            relative_pos += 'behind'
+                              'answer': 'back'}))
+            relative_pos += 'back and '
             behind_karts += 1
         else:
             qa_pairs.append(qa_pair_factory(**{'question': q2.format(kart_name=kart_name),
                               'answer': 'front'}))
-            relative_pos += 'front'
+            relative_pos += 'front and '
             front_karts += 1
+
+
+        if op(x, ego_kart_ctr[0]):
+            qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
+                              'answer': 'right'}))
+            relative_pos += 'right'
+            right_karts += 1
+
+        else:
+            qa_pairs.append(qa_pair_factory(**{'question': q1.format(kart_name=kart_name),
+                                               'answer': 'left'}))
+            relative_pos += 'left'
+            left_karts += 1
 
         qa_pairs.append(qa_pair_factory(**{'question': q3.format(kart_name=kart_name),
                               'answer': relative_pos}))
